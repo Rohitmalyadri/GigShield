@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Worker {
+  id                    String   @id @default(uuid())
+  workerHash            String   @unique
+  platforms             String[]
+  zone                  String
+  city                  String
+  weeklyEarningsHistory Float[]
+  currentWeeklyPremium  Float    @default(0)
+  zoneRiskScore         Float    @default(1.0)
+  seasonalMultiplier    Float    @default(1.0)
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  policies              Policy[]
+  claims                Claim[]
+}
+
+model Policy {
+  id             String   @id @default(uuid())
+  workerId       String
+  worker         Worker   @relation(fields: [workerId], references: [id])
+  weekStartDate  DateTime
+  weekEndDate    DateTime
+  premiumAmount  Float
+  premiumPaid    Boolean  @default(false)
+  coverageActive Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  claims         Claim[]
+}
+
+model Claim {
+  id                  String   @id @default(uuid())
+  workerId            String
+  worker              Worker   @relation(fields: [workerId], references: [id])
+  policyId            String
+  policy              Policy   @relation(fields: [policyId], references: [id])
+  disruptionType      String
+  gate1Passed         Boolean  @default(false)
+  gate2Passed         Boolean  @default(false)
+  fraudCheckPassed    Boolean  @default(false)
+  payoutAmount        Float    @default(0)
+  payoutStatus        String   @default("pending")
+  disruptionStartTime DateTime
+  disruptionEndTime   DateTime?
+  hoursLost           Float    @default(0)
+  createdAt           DateTime @default(now())
+}
+
+model DisruptionEvent {
+  id             String    @id @default(uuid())
+  zone           String
+  eventType      String
+  severity       String
+  confirmedByApi Boolean   @default(false)
+  apiSource      String
+  startTime      DateTime
+  endTime        DateTime?
+  isResolved     Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+}
+
+model AnomalyArchetype {
+  id             String   @id @default(uuid())
+  signatureHash  String   @unique
+  description    String
+  confirmations  Int      @default(0)
+  isAutoTrigger  Boolean  @default(false)
+  createdAt      DateTime @default(now())
+}
