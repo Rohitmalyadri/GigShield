@@ -2,6 +2,7 @@ const express = require('express');
 const { handlePlatformWebhook } = require('../ingestion/webhookReceiver');
 const { processDualGate } = require('../triggers/dualGate');
 const { calculateWeeklyPremium } = require('../risk/premiumCalculator');
+const { executePayoutForClaim } = require('../payout/payoutEngine');
 const { PrismaClient } = require('@prisma/client');
 
 const router = express.Router();
@@ -187,7 +188,19 @@ router.post('/simulate-disruption', async (req, res) => {
       worker.weeklyEarningsHistory // For payout calculation
     );
 
-    // ── STEP 6: Return the full decision to the caller ─
+    // ── STEP 6: Auto-trigger payout if claim was approved ──
+    let payoutResult = null;
+    if (result.payoutStatus === 'approved' && result.claimId) {
+      // Fetch the newly created claim from the database
+      const claim = await prisma.claim.findUnique({ where: { id: result.claimId } });
+      if (claim) {
+        // Execute the payout immediately (Razorpay Test Mode or simulation)
+        payoutResult = await executePayoutForClaim(claim, worker);
+        console.log(`[Simulation] Payout triggered: ${payoutResult?.transactionId}`);
+      }
+    }
+
+    // ── STEP 7: Return the full decision to the caller ─
     res.json({
       success: true,
       simulation: {
@@ -196,7 +209,9 @@ router.post('/simulate-disruption', async (req, res) => {
         workerState,
         premiumAmount: `₹${premiumAmount}/week`,
         hoursLost: hoursLost || 2,
-        gateDecision: result
+        gateDecision: result,
+        // Include payout info if an approved claim was paid out
+        ...(payoutResult && { payout: payoutResult })
       }
     });
 

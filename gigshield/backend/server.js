@@ -106,6 +106,11 @@ async function startServer() {
       // This callback runs once the server is ready.
       console.log(`🚀  GigShield server running on http://localhost:${PORT}`);
       console.log(`📡  Environment: ${process.env.NODE_ENV}`);
+
+      // Start the Zero-Day Anomaly Poller — runs every 60 seconds
+      // and scans all zones for mass rider dropoffs using Python ML
+      const { startAnomalyPoller } = require('./ingestion/anomalyPoller');
+      startAnomalyPoller();
     });
   } catch (error) {
     // If anything goes wrong during startup (e.g. wrong DB
