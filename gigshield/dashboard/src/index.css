@@ -1,0 +1,229 @@
+/* ─────────────────────────────────────────────────────────
+   GigShield Dashboard — Global CSS
+   Design system: Dark mode, orange accent, clean sans-serif
+   ───────────────────────────────────────────────────────── */
+
+/* Import Google Font — Inter is clean and professional */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* CSS Custom Properties (variables) — change a color here,
+   it updates everywhere on the dashboard automatically */
+:root {
+  --bg-primary:    #0f1117;   /* Main background — near black */
+  --bg-surface:    #1a1d27;   /* Card/panel background */
+  --bg-hover:      #232635;   /* Hover state for rows */
+  --accent:        #f59e0b;   /* Amber/orange — GigShield brand */
+  --accent-green:  #10b981;   /* Approved / success */
+  --accent-red:    #ef4444;   /* Rejected / danger */
+  --accent-blue:   #3b82f6;   /* Pending / info */
+  --text-primary:  #f1f5f9;   /* Main readable text */
+  --text-muted:    #64748b;   /* Secondary / caption text */
+  --border:        #2d3147;   /* Subtle borders between elements */
+  --radius:        8px;       /* Standard border radius */
+}
+
+/* Reset all browser defaults for consistent styling */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Apply dark background and font to the whole page */
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Scrollbar styling to match dark theme */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── LAYOUT ─────────────────────────────────────────────── */
+.app-layout {
+  display: flex;      /* Sidebar on left, main content on right */
+  min-height: 100vh;
+}
+
+/* ── SIDEBAR ────────────────────────────────────────────── */
+.sidebar {
+  width: 220px;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  padding: 24px 0;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+}
+
+.sidebar-logo {
+  padding: 0 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-logo h1 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+}
+
+.sidebar-logo p {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.sidebar-nav {
+  padding: 16px 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Each navigation link in the sidebar */
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.nav-link:hover { background: var(--bg-hover); color: var(--text-primary); }
+.nav-link.active { background: var(--accent); color: #000; }
+
+/* ── MAIN CONTENT ───────────────────────────────────────── */
+.main-content {
+  margin-left: 220px;  /* Push content past the fixed sidebar */
+  flex: 1;
+  padding: 32px;
+}
+
+/* Page title at the top of each view */
+.page-header {
+  margin-bottom: 28px;
+}
+
+.page-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.page-header p {
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+/* ── STAT CARDS (summary tiles at top of pages) ─────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.stat-card .label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-card .value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 6px;
+  line-height: 1;
+}
+
+.stat-card .value.green { color: var(--accent-green); }
+.stat-card .value.red   { color: var(--accent-red); }
+.stat-card .value.amber { color: var(--accent); }
+
+/* ── DATA TABLE ─────────────────────────────────────────── */
+.table-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.table-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  padding: 11px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--bg-primary);
+}
+
+td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--bg-hover); }
+
+/* ── STATUS BADGES ──────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-approved  { background: rgba(16,185,129,.15); color: var(--accent-green); }
+.badge-rejected  { background: rgba(239,68,68,.15);  color: var(--accent-red); }
+.badge-pending   { background: rgba(59,130,246,.15); color: var(--accent-blue); }
+.badge-duplicate { background: rgba(245,158,11,.15); color: var(--accent); }
+
+/* ── GATE INDICATORS ────────────────────────────────────── */
+.gate { font-size: 16px; }
+.gate.pass::before { content: '✅'; }
+.gate.fail::before { content: '❌'; }
+
+/* ── LOADING / EMPTY STATE ──────────────────────────────── */
+.loading, .empty {
+  padding: 48px;
+  text-align: center;
+  color: var(--text-muted);
+}

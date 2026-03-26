@@ -1,23 +1,41 @@
+const { execSync } = require('child_process');
+const path = require('path');
+
 // Calculate the weekly premium for a worker based on the Wage Mirror Principle
 // Formula: (avg(12-week earnings) * 0.75%) * zoneRiskScore * seasonalMultiplier
-function calculateWeeklyPremium(earningsHistory, zoneRiskScore = 1.0, seasonalMultiplier = 1.0) {
-  // Check if the earnings history array is empty or undefined
-  if (!earningsHistory || earningsHistory.length === 0) {
-    // If we have no history, the premium is mathematically 0 (or a fallback base rate)
-    return 0; 
-  }
+function calculateWeeklyPremium(earningsHistory, zone = null, fallbackRiskScore = 1.0, seasonalMultiplier = 1.0) {
+  if (!earningsHistory || earningsHistory.length === 0) return 0; 
 
-  // Use the reduce function to sum up all earnings inside the 12-week tracked array
   const totalEarnings = earningsHistory.reduce((sum, val) => sum + val, 0);
-  
-  // Divide the total sum by the number of weeks (usually 12) to get the trailing average
   const avgEarnings = totalEarnings / earningsHistory.length;
-
-  // The base premium is exactly 0.75% of their average weekly earnings
   const basePremium = avgEarnings * 0.0075;
 
-  // Multiply the base premium by the risk score and season multiplier (1.0 for Phase 1)
-  const finalPremium = basePremium * zoneRiskScore * seasonalMultiplier;
+  // ── PHASE 2 ML INTEGRATION ─────────────────────────────────
+  let dynamicRiskScore = fallbackRiskScore;
+  
+  // If a zone pin code is provided, call the Python ML script to get the dynamic multiplier
+  if (zone) {
+    try {
+      // Construct the absolute path to the python script
+      const scriptPath = path.join(__dirname, 'ml', 'zoneRiskScorer.py');
+      
+      // Execute the Python script synchronously (acceptable for hackathon MVP)
+      // We use "py" for Windows as requested, but grab stdout
+      const stdout = execSync(`py "${scriptPath}" ${zone}`, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'ignore'] });
+      
+      // Parse the output as a float
+      const parsedScore = parseFloat(stdout.trim());
+      if (!isNaN(parsedScore)) {
+        dynamicRiskScore = parsedScore;
+      }
+    } catch (err) {
+      // If python is missing or the script fails, it gracefully falls back to the database default
+      console.warn(`[ML Fallback] Could not fetch risk score for zone ${zone}. Using fallback ${fallbackRiskScore}.`);
+    }
+  }
+
+  // Multiply the base premium by the risk score and season multiplier
+  const finalPremium = basePremium * dynamicRiskScore * seasonalMultiplier;
 
   // Round the final premium calculation to 2 decimal places to represent standard currency
   return Math.round(finalPremium * 100) / 100;

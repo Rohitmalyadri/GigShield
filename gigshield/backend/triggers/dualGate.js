@@ -1,67 +1,41 @@
 // ─────────────────────────────────────────────────────────
-// LAYER 3 — DUAL GATE: The Core Decision Engine
+// LAYER 3+4 — DUAL GATE + FRAUD VALIDATION (Updated)
 // ─────────────────────────────────────────────────────────
-// This file connects Gate 1 and Gate 2.
-// ONLY if BOTH gates return true does a Claim get created.
-//
-// Think of this as the brain that:
-//   1. Asks Gate 1: "Is there a real disruption?" 
-//   2. Asks Gate 2: "Was the worker actively trying to earn?"
-//   3. If YES to both → creates a Claim record in PostgreSQL
-//   4. If NO to either → logs the reason and does nothing
-//
-// It also calculates the PAYOUT AMOUNT using the formula:
-//   hourlyRate = avg(12-week earnings) ÷ (6 days × 8 hrs)
-//   payoutAmount = hourlyRate × hoursLost × 0.75 (75% cap)
+// Now wired with the full 5-layer pipeline:
+//   STEP 1: Gate 1 (rainfall trigger)
+//   STEP 2: Gate 2 (worker activity proxy)
+//   STEP 3: Deduplication (no double payouts)
+//   STEP 4: GPS Spoofing check
+//   STEP 5: Create Claim in PostgreSQL
 // ─────────────────────────────────────────────────────────
 
-const { PrismaClient } = require('@prisma/client'); // Connect to PostgreSQL
-const { evaluateGate1 } = require('./gate1');        // Import Gate 1 logic
-const { evaluateGate2 } = require('./gate2');        // Import Gate 2 logic
+const { PrismaClient }       = require('@prisma/client');
+const { evaluateGate1 }      = require('./gate1');              // Layer 3: Environmental trigger
+const { evaluateGate2 }      = require('./gate2');              // Layer 3: Activity proxy
+const { checkDuplicateClaim }= require('../fraud/deduplication'); // Layer 4: Double-payout guard
+const { checkGpsSpoofing }   = require('../fraud/gpsSpoofing');   // Layer 4: GPS fraud guard
 
-// Create a single shared Prisma client instance for this file
 const prisma = new PrismaClient();
 
 /**
- * Calculate the payout amount using the Wage Mirror formula.
- * Payout = hourlyRate × hoursLost × 0.75 (75% cap)
- *
- * @param {number[]} earningsHistory - 12-week earnings array in ₹
- * @param {number} hoursLost - How many hours the disruption lasted
- * @returns {number} The payout amount in ₹, capped at 75%
+ * Calculates the payout amount using the Wage Mirror formula.
+ * Formula: hourlyRate × hoursLost × 0.75 (75% income protection cap)
  */
 function calculatePayoutAmount(earningsHistory, hoursLost) {
   // Average weekly earnings across the trailing 12 weeks
   const avgWeeklyEarnings =
     earningsHistory.reduce((sum, val) => sum + val, 0) / earningsHistory.length;
 
-  // Assume a worker works 6 days a week for 8 hours per day = 48 work hours per week
-  const weeklyWorkHours = 48;
+  // Worker works 6 days × 8 hours = 48 hours per week
+  const hourlyRate = avgWeeklyEarnings / 48;
 
-  // Calculate the hourly earning rate from weekly average
-  const hourlyRate = avgWeeklyEarnings / weeklyWorkHours;
-
-  // Apply the 0.75 cap — payout is 75% of lost income (NOT 100%)
-  // WHY 75%? Prevents moral hazard — a worker shouldn't earn MORE
-  // from a disruption than from actually working.
-  const payoutAmount = hourlyRate * hoursLost * 0.75;
-
-  // Round to 2 decimal places for currency display
-  return Math.round(payoutAmount * 100) / 100;
+  // Apply the 75% cap and round to 2 decimal places
+  return Math.round(hourlyRate * hoursLost * 0.75 * 100) / 100;
 }
 
 /**
- * Main entry point: runs both gates and creates a Claim if both pass.
- *
- * @param {string} workerId       - UUID of the worker from PostgreSQL
- * @param {string} policyId       - UUID of the active policy from PostgreSQL
- * @param {object} workerState    - Worker's activity snapshot (from Redis/webhook)
- * @param {object} weatherData    - Raw weather object from OpenWeatherMap
- * @param {string} disruptionZone - Pin code of the disruption area
- * @param {number} hoursLost      - How many hours of income were lost
- * @param {number[]} earningsHistory - Worker's 12-week trailing earnings array
- *
- * @returns {object} Result with claim info or rejection reason
+ * Master pipeline function: runs all gates and fraud checks,
+ * then creates (or blocks) a Claim record in PostgreSQL.
  */
 async function processDualGate(
   workerId,
@@ -70,73 +44,108 @@ async function processDualGate(
   weatherData,
   disruptionZone,
   hoursLost,
-  earningsHistory
+  earningsHistory,
+  lastKnownState = null  // Previous heartbeat from Redis (optional for Phase 1)
 ) {
-  // ── STEP 1: Run Gate 1 ─────────────────────────────────
+  // ── STEP 1: Gate 1 — Environmental Trigger ─────────────
   const gate1Result = evaluateGate1(weatherData);
-  console.log(`[Dual Gate] Gate 1 result: triggered=${gate1Result.triggered} — ${gate1Result.reason}`);
+  console.log(`[Gate 1] triggered=${gate1Result.triggered} — ${gate1Result.reason}`);
 
-  // ── STEP 2: Run Gate 2 ─────────────────────────────────
+  // ── STEP 2: Gate 2 — Activity Proxy ────────────────────
   const gate2Result = evaluateGate2(workerState, disruptionZone);
-  console.log(`[Dual Gate] Gate 2 result: validated=${gate2Result.validated} — ${gate2Result.reason}`);
+  console.log(`[Gate 2] validated=${gate2Result.validated} — ${gate2Result.reason}`);
 
-  // ── STEP 3: Did BOTH gates pass? ──────────────────────
-  const bothPassed = gate1Result.triggered && gate2Result.validated;
-
-  // Determine what type of disruption caused the trigger
-  const disruptionType = gate1Result.triggered ? 'heavy_rainfall' : 'none';
-
-  // Calculate payout only if both gates passed; 0 if rejected
-  const payoutAmount = bothPassed
-    ? calculatePayoutAmount(earningsHistory, hoursLost)
-    : 0;
-
-  // Calculate timing for the claim record
+  // Record the start time before we do any async operations
   const disruptionStartTime = new Date();
-  const disruptionEndTime = new Date(
-    disruptionStartTime.getTime() + hoursLost * 60 * 60 * 1000
-  );
+  const disruptionEndTime   = new Date(disruptionStartTime.getTime() + hoursLost * 60 * 60 * 1000);
 
-  // ── STEP 4: Write the Claim to PostgreSQL ─────────────
-  // We ALWAYS create a Claim record regardless of whether it passed or not.
-  // This gives us a full audit trail for the underwriter.
-  try {
+  // If either gate fails, create a rejected claim and stop early
+  const bothPassed = gate1Result.triggered && gate2Result.validated;
+  if (!bothPassed) {
     const claim = await prisma.claim.create({
       data: {
-        workerId: workerId,             // Link to the Worker record
-        policyId: policyId,             // Link to the weekly Policy record
-        disruptionType: disruptionType, // What caused the disruption
-        gate1Passed: gate1Result.triggered,   // Did the environment qualify?
-        gate2Passed: gate2Result.validated,   // Was the worker active?
-        fraudCheckPassed: false,        // Phase 2: Fraud layer runs next
-        payoutAmount: payoutAmount,     // Calculated payout (0 if rejected)
-        payoutStatus: bothPassed ? 'pending_fraud_check' : 'rejected',
-        disruptionStartTime: disruptionStartTime,
-        disruptionEndTime: disruptionEndTime,
-        hoursLost: hoursLost,
+        workerId, policyId,
+        disruptionType:   gate1Result.triggered ? 'heavy_rainfall' : 'none',
+        gate1Passed:      gate1Result.triggered,
+        gate2Passed:      gate2Result.validated,
+        fraudCheckPassed: false,
+        payoutAmount:     0,
+        payoutStatus:     'rejected',
+        disruptionStartTime,
+        disruptionEndTime,
+        hoursLost
       }
     });
-
-    console.log(
-      `[Dual Gate] Claim created: ${claim.id} — Status: ${claim.payoutStatus}`
-    );
-
-    // Return the result so the API endpoint can send it back to the caller
     return {
-      success: true,
-      claimId: claim.id,
-      bothPassed,
-      payoutAmount,
-      payoutStatus: claim.payoutStatus,
-      gate1: { triggered: gate1Result.triggered, reason: gate1Result.reason },
-      gate2: { validated: gate2Result.validated, reason: gate2Result.reason }
+      success: true, claimId: claim.id,
+      bothPassed: false, payoutAmount: 0, payoutStatus: 'rejected',
+      gate1: gate1Result, gate2: gate2Result,
+      fraudCheck: { skipped: true, reason: 'Gates failed — fraud check not needed' }
     };
-  } catch (err) {
-    // If the database write failed, log it clearly
-    console.error(`[Dual Gate Error] Failed to create claim: ${err.message}`);
-    return { success: false, error: err.message };
   }
+
+  // ── STEP 3: Fraud Check 1 — Deduplication ──────────────
+  const dedupResult = await checkDuplicateClaim(workerId, disruptionStartTime);
+  console.log(`[Fraud Layer] Deduplication: isDuplicate=${dedupResult.isDuplicate} — ${dedupResult.reason}`);
+
+  if (dedupResult.isDuplicate) {
+    // A payout was already issued for this worker in this storm window
+    return {
+      success: false,
+      bothPassed: true,
+      payoutStatus: 'duplicate_rejected',
+      fraudReason: dedupResult.reason,
+      existingClaimId: dedupResult.existingClaimId
+    };
+  }
+
+  // ── STEP 4: Fraud Check 2 — GPS Spoofing ───────────────
+  const gpsResult = checkGpsSpoofing(workerState, lastKnownState);
+  console.log(`[Fraud Layer] GPS check: isSpoofed=${gpsResult.isSpoofed} — ${gpsResult.reason}`);
+
+  if (gpsResult.isSpoofed) {
+    // Do not pay out if GPS is inconsistent with last known location
+    return {
+      success: false,
+      bothPassed: true,
+      payoutStatus: 'fraud_rejected_gps',
+      fraudReason: gpsResult.reason
+    };
+  }
+
+  // ── STEP 5: All checks passed — create an approved Claim ─
+  const payoutAmount = calculatePayoutAmount(earningsHistory, hoursLost);
+
+  const claim = await prisma.claim.create({
+    data: {
+      workerId, policyId,
+      disruptionType:   'heavy_rainfall',
+      gate1Passed:      true,
+      gate2Passed:      true,
+      fraudCheckPassed: true,        // All fraud checks cleared
+      payoutAmount:     payoutAmount,
+      payoutStatus:     'approved',  // Ready to send to the payout layer
+      disruptionStartTime,
+      disruptionEndTime,
+      hoursLost
+    }
+  });
+
+  console.log(`[Dual Gate] ✅ Claim APPROVED: ${claim.id} — ₹${payoutAmount}`);
+
+  return {
+    success: true,
+    claimId: claim.id,
+    bothPassed: true,
+    payoutAmount,
+    payoutStatus: 'approved',
+    gate1: gate1Result,
+    gate2: gate2Result,
+    fraudCheck: {
+      deduplication: dedupResult.reason,
+      gpsSpoofing:   gpsResult.reason
+    }
+  };
 }
 
-// Export the function so the API route can call it
 module.exports = { processDualGate };

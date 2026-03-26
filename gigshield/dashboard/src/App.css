@@ -1,0 +1,6 @@
+/* App.css — kept minimal since all styles are in index.css */
+#root {
+  max-width: none;
+  padding: 0;
+  text-align: left;
+}

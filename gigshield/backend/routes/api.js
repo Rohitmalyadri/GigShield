@@ -28,9 +28,10 @@ router.get('/workers', async (req, res) => {
     // For each worker, calculate their current weekly premium
     const workersWithPremiums = workers.map(worker => ({
       ...worker,
-      // Calculate the premium fresh from the earnings history
+      // Calculate the premium fresh from the earnings history using ML
       calculatedPremium: calculateWeeklyPremium(
         worker.weeklyEarningsHistory,
+        worker.zone,                 // New parameter for python ML script
         worker.zoneRiskScore,
         worker.seasonalMultiplier
       )
@@ -137,9 +138,10 @@ router.post('/simulate-disruption', async (req, res) => {
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekEnd.getDate() + 6); // End of the 7-day policy week
 
-    // Calculate premium for this worker using our Layer 2 formula
+    // Calculate premium for this worker using our Layer 2 ML formula
     const premiumAmount = calculateWeeklyPremium(
       worker.weeklyEarningsHistory,
+      worker.zone,           // Add zone to fetch ML risk score
       worker.zoneRiskScore,
       worker.seasonalMultiplier
     );
