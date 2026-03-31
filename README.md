@@ -1,6 +1,6 @@
 # 🛡️ GigShield — AI-Powered Parametric Wage Stabilization for Food Delivery Partners
 
-> **Guidewire DEVTrails 2026 | Phase 1 Submission**
+> **Guidewire DEVTrails 2026 | Phase 4 — Autonomous LLM Demo**
 > Persona: Food Delivery Partners (Zomato / Swiggy)
 > Platform: Mobile-first, API-first B2B2C Architecture
 
@@ -67,7 +67,7 @@ No separate app. No KYC friction. No bank details. Zero onboarding drop-off.
 
 GigShield covers **INCOME LOSS ONLY** caused by verifiable external disruptions.
 
-✅ **Covered:** Lost earning hours due to weather, flooding, pollution-based platform suspension, civic disruptions (curfew, strikes), geospatial anomalies  
+✅ **Covered:** Lost earning hours due to weather, flooding, pollution-based platform suspension, civic disruptions (curfew, strikes), geospatial anomalies
 ❌ **Excluded:** Vehicle repairs, health expenses, accident medical bills, life insurance, any event not causing measurable income loss
 
 ---
@@ -118,16 +118,16 @@ Food delivery workers routinely multi-app across Zomato and Swiggy simultaneousl
 {"worker_hash": "A1B2C3...", "platform": "zomato", "status": "offline", "zone": "koramangala_5"}
 ```
 
-The Fraud Validation Layer detects the matching hash, merges the signals to confirm the worker is genuinely grounded across all platforms, and ensures **only one payout is calculated per disruption event**. This directly satisfies the "Duplicate Claim Prevention" requirement.
+The Fraud Validation Layer detects the matching hash, merges the signals to confirm the worker is genuinely grounded across all platforms, and ensures **only one payout is calculated per disruption event**.
 
 ### 6b. Anomaly Detection Checks
 
 | Fraud Vector | Detection Method |
 |---|---|
-| GPS Spoofing | Cross-reference GPS coordinates against network cell tower triangulation |
+| GPS Spoofing | Zone-change under 10 minutes detected and flagged |
 | Fake weather claims | Gate 1 requires API-confirmed disruption — no self-reporting |
-| Earnings inflation fraud | Payout calculated on 12-week trailing average — single inflated weeks have minimal impact |
-| Coordinated fake anomaly | New anomaly archetypes require 3 independent geographic confirmations before auto-triggering |
+| Earnings inflation fraud | Payout calculated on 12-week trailing average |
+| Duplicate claims | 3-hour deduplication window blocks re-submissions |
 
 ---
 
@@ -137,7 +137,7 @@ GigShield is not a static rules engine. It is a continuously evolving predictive
 
 **How it detects novel disruptions it has never seen before:**
 
-The AI constantly monitors the baseline "active-and-earning" rate across micro-zones. When a sudden collective behavioral collapse occurs with no matching weather signal:
+The Zero-Day Anomaly Poller runs every 60 seconds using DBSCAN clustering to detect mass rider dropoffs that don't match any known weather trigger.
 
 ```
 ANOMALY DETECTED:
@@ -152,39 +152,22 @@ ANOMALY DETECTED:
 → Future occurrences of this signature → auto-trigger with confidence scoring.
 ```
 
-This human-in-the-loop approval before archetype promotion prevents fraud exploitation of newly learned patterns while still allowing the system to grow smarter with every real-world event.
-
 ---
 
 ## 8. Weekly Premium Model — The Wage Mirror
 
-GigShield's premium model mirrors the worker's own earnings profile. This is called the **Wage Mirror Principle** — high earner, higher premium, higher payout protection; casual earner, lower premium, lower payout. The product scales with the person, not against them.
-
-### Premium Formula
-
 ```
-Weekly Premium = (12-Week Trailing Average Earnings × Base Rate %)
-                 × Zone Risk Multiplier
-                 × Seasonal Risk Multiplier
+Weekly Premium = avg(12-week earnings) × 0.0075 × zoneRiskScore × seasonalMultiplier
+Disruption Payout = (avg hourly earnings × hoursLost) × 0.75
 ```
 
-| Worker Type | Avg Weekly Earnings | Base Rate | Zone Multiplier | Season Multiplier | Weekly Premium |
-|---|---|---|---|---|---|
-| Full-time hustler | ₹10,000 | 0.75% | 1.1 (flood zone) | 1.3 (monsoon) | ~₹107 |
-| Regular rider | ₹6,000 | 0.75% | 1.0 (normal) | 1.0 (dry season) | ~₹45 |
-| Casual/part-time | ₹2,000 | 0.75% | 0.9 (safe zone) | 1.0 | ~₹14 |
+| Worker | Avg Weekly Earnings | Zone | Weekly Premium |
+|---|---|---|---|
+| Ravi (Bangalore) | ₹10,358 | 560034 | ₹78/wk |
+| Priya (Mumbai) | ₹6,100 | 400053 | ₹45/wk |
+| Arjun (Delhi) | ₹2,000 | 110001 | ₹15/wk |
 
-### Payout Calculation
-
-```
-Disruption Payout = (12-Week Trailing Avg Hourly Earnings × Disruption Hours Lost) × 0.75
-```
-
-The 0.75 cap (75% income replacement) maintains healthy loss ratios and prevents moral hazard — no worker should earn more from a disruption than from working.
-
-### Coverage Continuity Rule
-
-If a rider's weekly earnings are insufficient to cover the premium deduction (e.g., after consecutive disruption weeks), the platform fronts the premium and recovers it across the next two earning weeks. Workers stay covered during their worst weeks — exactly when they need it most.
+The 0.75 cap (75% income replacement) maintains healthy loss ratios and prevents moral hazard.
 
 ---
 
@@ -192,42 +175,45 @@ If a rider's weekly earnings are insufficient to cover the premium deduction (e.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  LAYER 1: DATA INGESTION                                │
-│  Webhooks from Zomato/Swiggy (activity, earnings, GPS)  │
-│  IMD Weather API | OpenWeatherMap | CPCB AQI API        │
-│  Simulated Traffic / Civic Alert feeds                  │
+│  LAYER 1: DATA INGESTION ✅                              │
+│  Webhooks from mock Zomato/Swiggy (port 3001)           │
+│  worker_hash, GPS, zone, status, completions            │
 └──────────────────────────┬──────────────────────────────┘
                            ▼
 ┌─────────────────────────────────────────────────────────┐
-│  LAYER 2: AI RISK ENGINE                                │
+│  LAYER 2: ML PREMIUM CALCULATOR ✅                       │
 │  12-week trailing earnings baseline per worker          │
-│  Zone risk scoring (flood history, drainage maps)       │
-│  Seasonal multiplier updates (IMD forecast integration) │
-│  Weekly premium recalculation engine                    │
+│  Python scikit-learn zone risk scorer                   │
+│  Seasonal multiplier engine                             │
 └──────────────────────────┬──────────────────────────────┘
                            ▼
 ┌─────────────────────────────────────────────────────────┐
-│  LAYER 3: PARAMETRIC TRIGGER ENGINE                     │
-│  Gate 1: Environmental / External disruption check      │
-│  Gate 2: Rider activity & GPS validation                │
-│  Geospatial anomaly detection for zero-day events       │
+│  LAYER 3: DUAL GATE + ZERO-DAY ANOMALY ✅                │
+│  Gate 1: Rainfall ≥ 35mm/hr in rider's zone             │
+│  Gate 2: Rider online ≥ 45 min, completions dropped     │
+│  DBSCAN anomaly poller — runs every 60 seconds          │
 └──────────────────────────┬──────────────────────────────┘
                            ▼
 ┌─────────────────────────────────────────────────────────┐
-│  LAYER 4: FRAUD VALIDATION LAYER                        │
-│  SHA-256 canonical ID deduplication (multi-app)         │
-│  GPS spoofing detection (cell tower cross-reference)    │
-│  Anomaly archetype confidence scoring                   │
-│  Earnings inflation detection (trailing average)        │
+│  LAYER 4: FRAUD VALIDATION ✅                            │
+│  SHA-256 canonical ID deduplication (3hr window)        │
+│  GPS spoofing detection (zone-change < 10 min)          │
 └──────────────────────────┬──────────────────────────────┘
                            ▼
 ┌─────────────────────────────────────────────────────────┐
-│  LAYER 5: PAYOUT INSTRUCTION LAYER                      │
-│  Webhook to platform wallet (mock Razorpay / UPI sim)   │
-│  Underwriter ledger update (claims log)                 │
-│  Admin dashboard alert + audit trail                    │
-│  Worker push notification via platform app              │
+│  LAYER 5: PAYOUT ENGINE ✅                               │
+│  Razorpay simulation (UTR transaction ID generated)     │
+│  Underwriter ledger update                              │
+│  WebSocket broadcast → dashboard                        │
 └─────────────────────────────────────────────────────────┘
+
+AUTONOMOUS AI BRAIN (Phase 4) ✅
+  Primary LLM:  Gemini 2.0 Flash Lite (Google AI Studio)
+  Fallback LLM: Ollama qwen-balanced:latest (local)
+  scenarioEngine.js  → auto-generates disruptions every 2-3 min
+  narratorEngine.js  → plain English narration for all 8 events
+  WebSocket (Socket.io) → live broadcasts to dashboard
+  QR Check-in → worker scans QR → pipeline fires automatically
 ```
 
 ---
@@ -236,75 +222,172 @@ If a rider's weekly earnings are insufficient to cover the premium deduction (e.
 
 | Layer | Technology |
 |---|---|
-| Mobile Interface | React Native (embedded within partner app — simulated) |
-| Backend / API Layer | Node.js + Express microservices |
-| AI / ML Engine | Python (scikit-learn for risk scoring, anomaly detection) |
-| Database | PostgreSQL (worker profiles, claims ledger) + Redis (real-time zone state) |
-| Weather / Environment APIs | OpenWeatherMap API (free tier), IMD public feed, CPCB AQI API |
-| Platform API | Simulated JSON webhook endpoints (mock Zomato/Swiggy manifest) |
-| Payment | Razorpay test mode / UPI simulator |
+| Backend / API | Node.js + Express (port 4000) |
+| Database | PostgreSQL 17 + Prisma ORM |
+| Cache | Redis / Memurai |
+| ML / AI (Risk) | Python 3 + scikit-learn (zone risk scoring, DBSCAN anomaly detection) |
+| LLM Brain (Primary) | Gemini 2.0 Flash Lite (Google AI Studio free tier) |
+| LLM Brain (Fallback) | Ollama — qwen-balanced:latest (local, port 11434) |
+| Real-time | Socket.io WebSockets |
+| QR Code | node-qrcode package |
+| Frontend Dashboard | React + Vite (port 5173) + Recharts |
+| Payment Simulation | Razorpay Test Mode (simulated UTR) |
 | Identity Hashing | SHA-256 phone number tokenization |
-| Admin Dashboard | React.js web dashboard |
-| Hosting | AWS EC2 / Railway (dev environment) |
+| Mock Platform | Custom Node.js server (port 3001) |
 
 ---
 
-## 11. Development Plan
+## 11. Seeded Test Workers
+
+| Name | City | Zone | Phone (for hash) | Platforms | Premium |
+|---|---|---|---|---|---|
+| Ravi Kumar | Bangalore | 560034 | 9876543210 | Zomato + Swiggy | ₹78/wk |
+| Priya Sharma | Mumbai | 400053 | 9123456780 | Swiggy | ₹45/wk |
+| Arjun Mehta | Delhi | 110001 | 9988776655 | Zomato | ₹15/wk |
+
+**Generate worker hash:**
+```cmd
+node -e "const c=require('crypto'); console.log(c.createHash('sha256').update('9876543210').digest('hex'));"
+```
+
+---
+
+## 12. Running the Project Locally
+
+### Prerequisites
+- Node.js v23+
+- Python 3.14+ (`py` command)
+- PostgreSQL 17
+- Memurai (Redis for Windows)
+- Ollama with `qwen-balanced:latest` model
+
+### Step 1 — Install dependencies
+```cmd
+cd backend
+npm install
+
+cd ..\dashboard
+npm install
+```
+
+### Step 2 — Configure environment
+```cmd
+cd backend
+copy .env.example .env
+```
+Edit `.env` and fill in:
+- `DATABASE_URL` — your PostgreSQL connection string
+- `GEMINI_API_KEY` — from https://aistudio.google.com/app/apikey
+- `LOCAL_WIFI_IP` — your WiFi IP from `ipconfig` (for QR code)
+
+### Step 3 — Set up the database
+```cmd
+cd backend
+npx prisma migrate dev --name init
+node prisma\seed.js
+```
+
+### Step 4 — Install Python dependencies
+```cmd
+py -m pip install scikit-learn numpy
+```
+
+### Step 5 — Run the full stack (3 terminals)
+
+**Terminal 1 — Backend:**
+```cmd
+cd backend
+npx nodemon server.js
+```
+
+**Terminal 2 — Mock Platform Data:**
+```cmd
+cd backend
+node mock\platformWebhook.js
+```
+
+**Terminal 3 — Dashboard:**
+```cmd
+cd dashboard
+npm run dev
+```
+
+### Step 6 — Open the dashboard
+```
+http://localhost:5173
+```
+
+### Step 7 — Get Ravi's QR code
+Open in browser:
+```
+http://localhost:4000/api/qr/7619ee8cea49187f309616e30ecf54be072259b43760f1f550a644945d5572f2
+```
+
+---
+
+## 13. API Reference
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/` | Health check |
+| GET | `/api/workers` | List all workers with premiums |
+| GET | `/api/claims` | List all claims |
+| POST | `/api/simulate-disruption` | Trigger full 5-layer pipeline |
+| GET | `/api/qr/:workerHash` | Get QR code PNG image |
+| GET | `/api/qr-url/:workerHash` | Get QR check-in URL as JSON |
+| GET | `/api/checkin/:workerHash` | QR scan → mark worker online + schedule disruption |
+| POST | `/api/webhooks/platform` | Receive platform webhook |
+
+---
+
+## 14. Development Timeline
 
 ### Phase 1 (March 4–20) — Ideation & Foundation ✅
 - Architecture design and documentation
-- Mock API schema definition (platform webhook payload structure)
-- Basic risk scoring model (Python notebook)
+- Mock API schema definition
+- Basic risk scoring model
 - Minimal prototype wireframes
 
-### Phase 2 (March 21–April 4) — Automation & Protection
-- Worker registration flow (simulated platform handshake)
-- Dynamic weekly premium calculation engine (live)
-- 3–5 automated parametric triggers wired to mock APIs
-- Claims management module
-- Zero-touch claim process demo
+### Phase 2 (March 21–26) — Automation & Protection ✅
+- Complete 5-layer engine (all layers operational)
+- Dynamic weekly premium calculator (ML-powered)
+- Dual Gate parametric trigger wired and tested
+- Fraud validation (deduplication + GPS spoofing)
+- Zero-Day Anomaly Detector (DBSCAN, runs every 60s)
+- Razorpay payout simulation (UTR generation)
+- React Admin Dashboard (Workers, Claims, Simulate pages)
 
-### Phase 3 (April 5–17) — Scale & Optimise
-- Advanced fraud detection (GPS spoofing, canonical ID deduplication)
-- Geospatial anomaly detection + human-in-the-loop admin flow
-- AI feedback loop and archetype promotion logic
-- Dual dashboard (Worker view + Insurer/Admin view)
-- Simulated instant payout via Razorpay test mode
+### Phase 3 (March 27 – March 31) — Autonomous LLM Demo ✅
+- Gemini 2.0 Flash Lite as primary AI brain
+- Ollama (qwen-balanced) as local fallback
+- `scenarioEngine.js` — auto-generates disruptions
+- `narratorEngine.js` — narrates all 8 event types
+- Socket.io WebSocket live feed
+- QR code check-in (mobile confirmation page)
+- Auto-pipeline: QR scan → 2.5 min timer → disruption fires autonomously
+
+### Phase 4 (April 1–17) — Mission Control & Polish
+- Mission Control dashboard (single screen, dark theme)
+- Live event feed with color coding
+- AI Narrator panel with Qwen/Gemini narration
+- Payout animation card
 - Final pitch deck + 5-minute demo video
 
 ---
 
-## 12. Business Viability Summary
+## 15. Business Viability
 
 GigShield operates as a **B2B2C embedded insurtech** — the AI parametric engine sitting between gig platforms and IRDAI-licensed underwriters.
 
-**Why this works at scale:**
+**Unit economics at scale:**
 - Distribution is free — Zomato/Swiggy already have 5M+ active delivery partners
-- Regulatory surface is minimal — GigShield is a technology provider, not an insurer
-- The AI moat is cross-platform — risk models trained on multi-platform data cannot be replicated by any single platform
-- Unit economics are viable — at ₹45/week average premium across 1M riders, that is ₹45Cr/week in premium flow with ~80% loss ratios in non-monsoon seasons
+- At ₹45/week average premium across 1M riders → ₹45Cr/week in premium flow
+- ~80% loss ratios in non-monsoon seasons → viable underwriting margin
 
 **The pitch in one line:**
 > GigShield is not selling insurance to gig workers. It is selling certainty to the platforms that depend on them.
 
 ---
 
-*Submitted for Guidewire DEVTrails 2026 | Phase 1 | March 2026*
-
-## Setup Fir Phase 1
-## This is a basic file structure and these are commands to check out those things
-
-1. Copy `.env.example` to `.env` and fill the variables.
-2. Install dependencies for the backend and dashboard:
-   ```sh
-   cd backend
-   npm install
-
-   cd ../dashboard
-   npm install
-   ```
-3. Run Prisma migrations:
-   ```sh
-   npx prisma migrate dev --name init
-   ```
-4. Start both servers using `npm run dev`.
+*Guidewire DEVTrails 2026 — GigShield Team*
+*Last updated: March 31, 2026*
