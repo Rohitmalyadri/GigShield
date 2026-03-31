@@ -221,4 +221,155 @@ router.post('/simulate-disruption', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────
+// ROUTE: Register a new worker
+// POST /api/register
+// Body: { name, phone, city, zone, platforms }
+// Creates a worker + auto-creates their first week policy
+// ─────────────────────────────────────────────────────────
+router.post('/register', async (req, res) => {
+  const { name, phone, city, zone, platforms } = req.body;
+
+  if (!phone || !city || !zone || !platforms?.length) {
+    return res.status(400).json({ success: false, error: 'Missing required fields' });
+  }
+
+  try {
+    // Hash the phone number (SHA-256) — same as what the QR uses
+    const crypto = require('crypto');
+    const workerHash = crypto.createHash('sha256').update(phone.trim()).digest('hex');
+
+    // Check if worker already registered
+    const existing = await prisma.worker.findUnique({ where: { workerHash } });
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        error: 'This phone number is already registered.',
+        workerHash: existing.workerHash
+      });
+    }
+
+    // Generate realistic 12-week earnings history based on city
+    const baseEarnings = { Bangalore: 9500, Mumbai: 7200, Delhi: 3800 };
+    const base = baseEarnings[city] || 6000;
+    const weeklyEarningsHistory = Array.from({ length: 12 }, () =>
+      Math.round(base * (0.8 + Math.random() * 0.4))
+    );
+
+    // Zone risk scores per city
+    const zoneRisk = { Bangalore: 1.1, Mumbai: 1.4, Delhi: 0.8 };
+
+    // Create the worker in PostgreSQL
+    const worker = await prisma.worker.create({
+      data: {
+        workerHash,
+        platforms,          // e.g. ['zomato', 'swiggy']
+        zone,
+        city,
+        weeklyEarningsHistory,
+        zoneRiskScore:      zoneRisk[city] || 1.0,
+        seasonalMultiplier: 1.0,
+        isActive:           false          // Becomes true on first QR scan
+      }
+    });
+
+    // Calculate their first week premium
+    const premiumAmount = calculateWeeklyPremium(
+      weeklyEarningsHistory, zone, worker.zoneRiskScore, worker.seasonalMultiplier
+    );
+
+    // Auto-create their first policy for the current week
+    const weekStart = new Date();
+    weekStart.setHours(0, 0, 0, 0);
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+
+    const policy = await prisma.policy.create({
+      data: {
+        workerId:       worker.id,
+        weekStartDate:  weekStart,
+        weekEndDate:    weekEnd,
+        premiumAmount,
+        premiumPaid:    true,
+        coverageActive: true
+      }
+    });
+
+    console.log(`[Register] New worker registered: ${city} / ${zone} — ₹${premiumAmount}/wk`);
+
+    res.json({
+      success: true,
+      worker: {
+        id:             worker.id,
+        workerHash:     worker.workerHash,
+        city:           worker.city,
+        zone:           worker.zone,
+        platforms:      worker.platforms,
+        weeklyPremium:  premiumAmount
+      },
+      policy: {
+        id:             policy.id,
+        weekStartDate:  weekStart,
+        weekEndDate:    weekEnd,
+        premiumAmount,
+        coverageActive: true
+      },
+      qrUrl: `/api/qr/${workerHash}`
+    });
+
+  } catch (err) {
+    console.error(`[Register Error] ${err.message}`);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────
+// ROUTE: Get all policies with worker info
+// GET /api/policies
+// ─────────────────────────────────────────────────────────
+router.get('/policies', async (req, res) => {
+  try {
+    const policies = await prisma.policy.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        worker: true,    // Join the worker record
+        claims: true     // Also include related claims
+      }
+    });
+
+    // Enrich with derived fields
+    const enriched = policies.map(p => ({
+      ...p,
+      isExpired:   new Date(p.weekEndDate) < new Date(),
+      claimsCount: p.claims.length,
+      claimsPaid:  p.claims.filter(c => c.payoutStatus === 'approved' || c.payoutStatus === 'simulated').length,
+      totalPaidOut: p.claims.reduce((s, c) => s + (c.payoutAmount || 0), 0)
+    }));
+
+    res.json({ success: true, count: policies.length, policies: enriched });
+  } catch (err) {
+    console.error(`[API Error] /api/policies: ${err.message}`);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────
+// ROUTE: Preview premium before registering
+// GET /api/premium-preview?city=Bangalore&zone=560034
+// ─────────────────────────────────────────────────────────
+router.get('/premium-preview', (req, res) => {
+  const { city, zone } = req.query;
+  const zoneRisk  = { Bangalore: 1.1, Mumbai: 1.4, Delhi: 0.8 };
+  const base      = { Bangalore: 9500, Mumbai: 7200, Delhi: 3800 };
+  const baseEarns = base[city] || 6000;
+  const fakeHistory = Array.from({ length: 12 }, () =>
+    Math.round(baseEarns * (0.85 + Math.random() * 0.3))
+  );
+  const premium = calculateWeeklyPremium(
+    fakeHistory, zone, zoneRisk[city] || 1.0, 1.0
+  );
+  res.json({ success: true, estimatedPremium: premium, city, zone });
+});
+
 module.exports = router;
