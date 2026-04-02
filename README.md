@@ -348,14 +348,15 @@ http://localhost:4000/api/qr/7619ee8cea49187f309616e30ecf54be072259b43760f1f550a
 - Basic risk scoring model
 - Minimal prototype wireframes
 
-### Phase 2 (March 21–26) — Automation & Protection ✅
-- Complete 5-layer engine (all layers operational)
-- Dynamic weekly premium calculator (ML-powered)
-- Dual Gate parametric trigger wired and tested
-- Fraud validation (deduplication + GPS spoofing)
-- Zero-Day Anomaly Detector (DBSCAN, runs every 60s)
-- Razorpay payout simulation (UTR generation)
-- React Admin Dashboard (Workers, Claims, Simulate pages)
+### Phase 2 (March 21–April 4) — Automation & Protection ✅ [SUBMISSION READY]
+**Theme:** "Protect Your Worker"
+**Deliverables Completed:**
+✅ **Registration Process**: `RegisterPage.jsx` provides a Swiggy/Zomato branded embedded opt-in screen, using SHA-256 identity hashing.
+✅ **Insurance Policy Management**: `PoliciesPage.jsx` displays coverage periods, active/expired status, paid premiums, and loss ratios.
+✅ **Dynamic Premium Calculation**: ML-powered (Python scikit-learn) zone risk scorer and `premiumCalculator.js` adjusts weekly premiums based on 12-week trailing earnings and localized risk.
+✅ **Claims Management**: Fully automated 5-state claim ledger tracking (Gate 1, Gate 2, Fraud deduplication, Payout execution).
+✅ **Automated Triggers**: 5 live APIs/triggers built (Rainfall >35mm/hr, Worker Activity >45min, Completion rate drops, GPS Spoofing, DBSCAN Mass Anomaly).
+✅ **Zero-Touch Claim Process**: QR scan triggers a simulated weather disruption → Gates validate → Payout triggers via Razorpay → UI updates and AI narrates. All within 30 seconds.
 
 ### Phase 3 (March 27 – March 31) — Autonomous LLM Demo ✅
 - Gemini 2.0 Flash Lite as primary AI brain
