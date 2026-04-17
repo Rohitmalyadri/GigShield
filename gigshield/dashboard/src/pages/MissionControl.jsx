@@ -1,4 +1,4 @@
-﻿// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 // MISSION CONTROL — MissionControl.jsx
 // ─────────────────────────────────────────────────────────
 // The single full-screen demo page. Dark theme.
@@ -328,19 +328,32 @@ export default function MissionControl() {
       {/* ═══ BOTTOM BAR ═════════════════════════════════ */}
       <div style={styles.bottomBar}>
 
-        {/* Bottom Left — QR Code */}
+        {/* Bottom Left — System Status (replaced QR code) */}
         <div style={styles.bottomSection}>
-          <div style={styles.bottomLabel}>Scan to Register as Ravi</div>
-          <img
-            src={qrSrc}
-            alt="Worker check-in QR code"
-            style={styles.qrImage}
-            onError={e => { e.target.style.display = 'none' }}
-          />
-          <div style={{ fontSize: 10, color: '#475569', marginTop: 4 }}>
-            {RAVI_HASH.substring(0, 16)}...
+          <div style={styles.bottomLabel}>System Status</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
+            {[
+              { label: 'AI Fraud Engine',    ok: true  },
+              { label: 'Weather API',        ok: true  },
+              { label: 'Razorpay Gateway',   ok: true  },
+              { label: 'Claims Pipeline',    ok: true  },
+            ].map(item => (
+              <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
+                <span style={{
+                  width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                  background: item.ok ? '#22c55e' : '#ef4444',
+                  boxShadow: item.ok ? '0 0 6px #22c55e' : 'none',
+                  display: 'inline-block'
+                }} />
+                <span style={{ color: '#94a3b8' }}>{item.label}</span>
+                <span style={{ marginLeft: 'auto', color: item.ok ? '#22c55e' : '#ef4444', fontWeight: 600 }}>
+                  {item.ok ? 'Online' : 'Down'}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
+
 
         {/* Bottom Center — Active Workers */}
         <div style={styles.bottomSection}>

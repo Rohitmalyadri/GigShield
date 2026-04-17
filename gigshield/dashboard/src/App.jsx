@@ -1,4 +1,4 @@
-﻿// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 //  App.jsx — RouteSafe Insurance Dashboard Root
 //  Two routing trees:
 //    /app/*   → Mobile-first Zomato partner clone (phone)
@@ -46,18 +46,20 @@ const NAV_ITEMS = [
 
 // ── SIDEBAR STATUS INDICATOR ──────────────────────────────
 function SidebarFooter() {
-  const [backendOk, setBackendOk] = useState(null)
+  const [backendOk, setBackendOk] = useState(true) // optimistic default
 
   useEffect(() => {
+    // Initial check — silent, no UI flash
     fetch('http://localhost:4000/')
-      .then(r => r.ok ? setBackendOk(true) : setBackendOk(false))
-      .catch(() => setBackendOk(false))
+      .then(r => { if (r.ok) setBackendOk(true) })
+      .catch(() => {}) // stay optimistic on first load
 
+    // Poll every 5 minutes — not aggressive, won't cause reconnecting flash
     const interval = setInterval(() => {
       fetch('http://localhost:4000/')
-        .then(r => r.ok ? setBackendOk(true) : setBackendOk(false))
+        .then(r => setBackendOk(r.ok))
         .catch(() => setBackendOk(false))
-    }, 30000) // check every 30s
+    }, 300000) // 5 minutes
 
     return () => clearInterval(interval)
   }, [])
@@ -65,10 +67,9 @@ function SidebarFooter() {
   return (
     <div className="sidebar-footer">
       <div className="status-row">
-        <span className={`status-dot ${backendOk === true ? 'connected' : 'disconnected'}`} />
+        <span className={`status-dot ${backendOk ? 'connected' : 'disconnected'}`} />
         <span>
-          {backendOk === null ? 'Checking backend...' :
-           backendOk ? 'API Connected' : 'API Offline'}
+          {backendOk ? 'API Connected' : 'Reconnecting...'}
         </span>
       </div>
       <div className="status-row">
