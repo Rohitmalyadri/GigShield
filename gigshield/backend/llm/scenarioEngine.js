@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // SCENARIO ENGINE — scenarioEngine.js
 // ─────────────────────────────────────────────────────────
 // Asks the AI to autonomously CREATE a disruption scenario
@@ -12,15 +12,9 @@ require('dotenv').config();
 
 // Import our LLM wrapper (Gemini → Ollama fallback)
 const { askLLM } = require('./llmClient');
-
-// Import the Dual Gate pipeline to run after generating the scenario
 const { processDualGate } = require('../triggers/dualGate');
-
-// Import Prisma so we can look up workers and create policies
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../prismaClient');  // shared singleton
 const { calculateWeeklyPremium } = require('../risk/premiumCalculator');
-
-const prisma = new PrismaClient();
 
 // A hardcoded scenario to use if the AI returns bad/no JSON
 const FALLBACK_SCENARIO = {
@@ -55,7 +49,7 @@ async function generateDisruption(activeWorkers) {
   ).join('\n');
 
   const prompt = `
-You are the risk intelligence engine for GigShield — an AI-powered parametric insurance platform for Indian food delivery riders (Zomato/Swiggy).
+You are the risk intelligence engine for RouteSafe Insurance — an AI-powered parametric insurance platform for Indian food delivery riders (Zomato/Swiggy).
 
 The following delivery workers are currently online and active:
 ${workerList}

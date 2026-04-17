@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // QR CHECK-IN ROUTE — qrCheckin.js
 // ─────────────────────────────────────────────────────────
 // GET /api/checkin/:workerHash
@@ -13,13 +13,12 @@
 // ─────────────────────────────────────────────────────────
 
 const express             = require('express');
-const { PrismaClient }    = require('@prisma/client');
+const prisma              = require('../prismaClient');  // shared singleton
 const { broadcast }       = require('../socket/socketManager');
 const { narrateEvent }    = require('../llm/narratorEngine');
 const { generateDisruption } = require('../llm/scenarioEngine');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // How long after check-in to auto-generate a disruption (from .env, default 150s)
 const SCENARIO_DELAY_MS = parseInt(process.env.SCENARIO_DELAY_SECONDS || '150') * 1000;
@@ -38,7 +37,7 @@ router.get('/checkin/:workerHash', async (req, res) => {
 
     if (!worker) {
       // Worker not found — return a clean error page (not a crash)
-      return res.status(404).send(buildErrorPage('Worker not found. Please contact GigShield support.'));
+      return res.status(404).send(buildErrorPage('Worker not found. Please contact RouteSafe Insurance support.'));
     }
 
     // ── STEP 2: Mark the worker as online ──────────────
@@ -51,7 +50,7 @@ router.get('/checkin/:workerHash', async (req, res) => {
 
     // ── STEP 3: Get AI to narrate this moment ──────────
     // We do this FIRST (don't await in main flow) so the phone screen loads fast
-    let narration = `A delivery worker has just gone online in ${worker.city}. GigShield coverage is now active.`;
+    let narration = `A delivery worker has just gone online in ${worker.city}. RouteSafe Insurance coverage is now active.`;
     narrateEvent('worker_online', { city: worker.city, zone: worker.zone }).then(text => {
       narration = text;
     }).catch(() => {});  // Fail silently — use fallback string above
@@ -128,7 +127,7 @@ function buildConfirmationPage(worker) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GigShield — You're Protected</title>
+  <title>RouteSafe Insurance — You're Protected</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -207,7 +206,7 @@ function buildConfirmationPage(worker) {
     </div>
 
     <p class="footer">
-      GigShield is now monitoring your zone in real time.<br>
+      RouteSafe Insurance is now monitoring your zone in real time.<br>
       If a disruption is detected, your payout is automatic.<br>
       No action required from you.
     </p>

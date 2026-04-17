@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // seed.js — Populate DB with 20 realistic workers
 // Run with:  node prisma/seed.js
 // ─────────────────────────────────────────────────────────
@@ -56,7 +56,7 @@ function calcPremium(earnings, riskScore) {
 }
 
 async function main() {
-  console.log('🌱 Starting GigShield database seed...');
+  console.log('🌱 Starting RouteSafe Insurance database seed...');
   console.log(`📊 Seeding ${WORKERS.length} workers across Bangalore, Mumbai, Delhi\n`);
 
   let created = 0, skipped = 0;

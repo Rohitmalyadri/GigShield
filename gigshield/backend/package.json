@@ -1,4 +1,17 @@
-{
+﻿{
+  "name": "RouteSafe Insurance-backend",
+  "version": "1.0.0",
+  "description": "RouteSafe Insurance parametric micro-insurance backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node prisma/seed.js",
+    "db:push": "npx prisma db push",
+    "db:migrate": "npx prisma migrate deploy",
+    "db:generate": "npx prisma generate",
+    "db:studio": "npx prisma studio"
+  },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^6.19.2",

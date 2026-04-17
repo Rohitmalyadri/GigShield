@@ -9,17 +9,15 @@
 //   STEP 5: Create Claim in PostgreSQL         → broadcasts payout_fired
 // ─────────────────────────────────────────────────────────
 
-const { PrismaClient }        = require('@prisma/client');
+// BUG FIX: Use the shared Prisma singleton — no separate PrismaClient here.
+const prisma                  = require('../prismaClient');
 const { evaluateGate1 }       = require('./gate1');
 const { evaluateGate2 }       = require('./gate2');
 const { checkDuplicateClaim } = require('../fraud/deduplication');
 const { checkGpsSpoofing }    = require('../fraud/gpsSpoofing');
 
-// NEW: Import broadcast and narrator — every gate result now fires to the dashboard
 const { broadcast }    = require('../socket/socketManager');
 const { narrateEvent } = require('../llm/narratorEngine');
-
-const prisma = new PrismaClient();
 
 /**
  * Calculates the payout amount using the Wage Mirror formula.

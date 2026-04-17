@@ -22,6 +22,8 @@ model Worker {
   createdAt             DateTime @default(now())
   policies              Policy[]
   claims                Claim[]
+  activities            WorkerActivity[]
+  compensations         Compensation[]
 }
 
 model Policy {
@@ -75,4 +77,83 @@ model AnomalyArchetype {
   confirmations  Int      @default(0)
   isAutoTrigger  Boolean  @default(false)
   createdAt      DateTime @default(now())
+}
+
+// ── STEP 4: Dynamic Risk Protection Engine models ─────────
+
+// Stores the calculated risk score per zone after each evaluation.
+// Queried by GET /api/risk/score/:zoneId
+model ZoneRisk {
+  id          String   @id @default(uuid())
+  zoneId      String                         // Pin code (e.g. "560034")
+  city        String   @default("Unknown")
+  riskScore   Float                          // 0–100 composite score
+  // Component scores for transparency/audit
+  weatherScore    Float @default(0)
+  workerShortage  Float @default(0)
+  demandSurge     Float @default(0)
+  regulatoryRisk  Float @default(0)
+  // Decision output
+  decisionMode    String @default("NORMAL") // NORMAL | INCENTIVE | PROTECTION | CRITICAL
+  timestamp   DateTime @default(now())
+
+  @@index([zoneId])
+  @@index([timestamp])
+}
+
+// Tracks per-worker activity metrics used in eligibility checks.
+model WorkerActivity {
+  id               String   @id @default(uuid())
+  workerId         String
+  worker           Worker   @relation(fields: [workerId], references: [id])
+  zoneId           String
+  activeHours      Float    @default(0)        // Hours online during the risk window
+  completedOrders  Int      @default(0)        // Orders fulfilled in the window
+  avgOrdersPerHour Float    @default(0)        // Baseline for demand surge calc
+  sessionDate      DateTime @default(now())    // Which day/shift this covers
+  createdAt        DateTime @default(now())
+
+  @@index([workerId])
+  @@index([zoneId])
+}
+
+// Records every compensation decision, whether paid or pending.
+model Compensation {
+  id          String   @id @default(uuid())
+  workerId    String
+  worker      Worker   @relation(fields: [workerId], references: [id])
+  zoneId      String
+  amount      Float                            // In rupees
+  type        String                           // BONUS | GUARANTEE | DOWNTIME
+  status      String   @default("PENDING")     // PENDING | PAID | REJECTED
+  riskScore   Float    @default(0)             // Score at time of decision
+  reason      String?                          // Human-readable explanation
+  createdAt   DateTime @default(now())
+
+  @@index([workerId])
+  @@index([status])
+}
+
+// Tracks the shared risk pool for financial sustainability logic.
+model PremiumPool {
+  id             String   @id @default(uuid())
+  totalCollected Float    @default(0)  // Total premiums collected (₹)
+  totalPayout    Float    @default(0)  // Total compensation paid out (₹)
+  lossRatio      Float    @default(0)  // totalPayout / totalCollected
+  lastUpdated    DateTime @updatedAt
+  createdAt      DateTime @default(now())
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  orderId     String   @unique        // Razorpay order ID (order_XXXXXXXXX)
+  paymentId   String?                 // Razorpay payment ID (pay_XXXXXXXXX) — set after success
+  signature   String?                 // HMAC SHA256 signature — stored for audit trail
+  amount      Int                     // In paise (₹100 = 10000 paise)
+  currency    String   @default("INR")
+  status      String   @default("PENDING")  // PENDING | SUCCESS | FAILED
+  workerHash  String?                 // Optional: link payment to a specific worker
+  description String?                 // What the payment is for (e.g. "Weekly premium")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // APP MONITOR — Live disruption alerts + payout notification
 // ─────────────────────────────────────────────────────────
 // THE KEY DEMO SCREEN. Connected to WebSocket.
@@ -27,12 +27,12 @@ export default function AppMonitor() {
   const [payout,    setPayout]    = useState(null)
   const [connected, setConnected] = useState(false)
   const [zone]                    = useState(
-    sessionStorage.getItem('gigshield_worker_zone') || '560034'
+    sessionStorage.getItem('RouteSafe Insurance_worker_zone') || '560034'
   )
   const [city]                    = useState(
-    sessionStorage.getItem('gigshield_worker_city') || 'Bangalore'
+    sessionStorage.getItem('RouteSafe Insurance_worker_city') || 'Bangalore'
   )
-  const workerName = sessionStorage.getItem('gigshield_worker_name') || 'Partner'
+  const workerName = sessionStorage.getItem('RouteSafe Insurance_worker_name') || 'Partner'
   const shiftStart = new Date()
 
   // ── WEBSOCKET EVENTS ──────────────────────────────────
@@ -50,7 +50,7 @@ export default function AppMonitor() {
 
     socket.on('disruption_generated', (payload) => {
       addEvent('disruption', '🌧️', 'Disruption Detected',
-        `Heavy rainfall detected in zone ${payload.data?.zone || zone}. GigShield monitoring activated.`,
+        `Heavy rainfall detected in zone ${payload.data?.zone || zone}. RouteSafe Insurance monitoring activated.`,
         '#EF4444')
     })
 
@@ -93,7 +93,7 @@ export default function AppMonitor() {
 
     socket.on('llm_narration', (payload) => {
       if (payload.data?.text) {
-        addEvent('ai', '🤖', 'GigShield AI',
+        addEvent('ai', '🤖', 'RouteSafe Insurance AI',
           payload.data.text,
           '#6366F1')
       }
@@ -200,7 +200,7 @@ export default function AppMonitor() {
           <div style={s.emptyFeed}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>🛡️</div>
             <div style={{ fontSize: 15, fontWeight: 600, color: '#1C1C1C' }}>
-              GigShield is monitoring your zone
+              RouteSafe Insurance is monitoring your zone
             </div>
             <div style={{ fontSize: 13, color: '#9CA3AF', marginTop: 6, lineHeight: 1.6 }}>
               If a disruption affects your earnings,<br />

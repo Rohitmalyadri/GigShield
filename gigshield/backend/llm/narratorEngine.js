@@ -1,7 +1,7 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // NARRATOR ENGINE — narratorEngine.js
 // ─────────────────────────────────────────────────────────
-// This is GigShield's voice. Every time something important
+// This is RouteSafe Insurance's voice. Every time something important
 // happens in the backend (Gate 1 fires, payout lands, etc.)
 // this module asks the AI to narrate it in plain English —
 // the kind of explanation that would make sens to both
@@ -18,7 +18,7 @@ const { askLLM } = require('./llmClient');
 // NEVER silently breaks or shows an empty narrator panel.
 const FALLBACK_NARRATIONS = {
   worker_online: (d) =>
-    `${d.city} — a delivery worker has just gone online and their coverage has been activated for this week. GigShield is now monitoring their zone in real time.`,
+    `${d.city} — a delivery worker has just gone online and their coverage has been activated for this week. RouteSafe Insurance is now monitoring their zone in real time.`,
 
   disruption_generated: (d) =>
     `Our AI has detected heavy rainfall of ${d.rainfall_mm_hr}mm per hour in ${d.city}. This exceeds the parametric threshold of 35mm per hour. The claim evaluation pipeline has been triggered automatically.`,
@@ -42,7 +42,7 @@ const FALLBACK_NARRATIONS = {
     `Payout of ₹${d.amount} has been credited to the worker's platform wallet. This covers ${d.hoursLost} hours of lost income at 75% of their average hourly rate — zero paperwork, zero waiting.`,
 
   llm_narration: (d) =>
-    d.text || 'GigShield AI is processing the latest event.',
+    d.text || 'RouteSafe Insurance AI is processing the latest event.',
 
   anomaly_detected: (d) =>
     `Zero-day anomaly detected in zone ${d.zone}. ${d.clusteredCount} workers went offline simultaneously within a 5km radius. This pattern does not match any known weather event — a manual review has been flagged.`
@@ -65,7 +65,7 @@ async function narrateEvent(eventType, data) {
   switch (eventType) {
     case 'worker_online':
       prompt = `
-A food delivery worker has just scanned their GigShield QR code and started their shift in ${data.city || 'an Indian city'}.
+A food delivery worker has just scanned their RouteSafe Insurance QR code and started their shift in ${data.city || 'an Indian city'}.
 Their weekly insurance coverage of ₹${data.premium || '45'} has been activated.
 Write 2 sentences narrating this moment, as if you are an insurance AI announcing this to judges watching a demo.
 Talk to the room — not to the worker.
@@ -74,7 +74,7 @@ Respond in plain English only. Maximum 2 sentences. No bullet points. No markdow
 
     case 'disruption_generated':
       prompt = `
-GigShield AI has autonomously generated a disruption scenario:
+RouteSafe Insurance AI has autonomously generated a disruption scenario:
 - City: ${data.city || 'Bangalore'}
 - Rainfall: ${data.rainfall_mm_hr || 42}mm per hour (threshold is 35mm)
 - Zone: ${data.zone || '560034'}
@@ -84,7 +84,7 @@ Respond in plain English only. Maximum 2 sentences. No bullet points. No markdow
 
     case 'gate1_result':
       prompt = `
-GigShield's Environmental Gate has just evaluated a disruption.
+RouteSafe Insurance's Environmental Gate has just evaluated a disruption.
 Result: ${data.triggered ? 'PASSED' : 'FAILED'}
 Reason: ${data.reason || `Rainfall was ${data.rainfall_mm_hr}mm/hr`}
 Write 1-2 sentences narrating this gate decision for judges.
@@ -94,7 +94,7 @@ Respond in plain English only. No bullet points. No markdown. No jargon.`.trim()
 
     case 'gate2_result':
       prompt = `
-GigShield's Activity Gate has evaluated the worker's behaviour during the disruption.
+RouteSafe Insurance's Activity Gate has evaluated the worker's behaviour during the disruption.
 Result: ${data.validated ? 'PASSED' : 'FAILED'}
 Reason: ${data.reason || 'Worker was online during the disruption window'}
 Write 1-2 sentences narrating this decision for judges.
@@ -103,7 +103,7 @@ Respond in plain English only. No bullet points. No markdown. No jargon.`.trim()
 
     case 'fraud_result':
       prompt = `
-GigShield's fraud detection layer has completed its checks.
+RouteSafe Insurance's fraud detection layer has completed its checks.
 Result: ${data.passed ? 'CLEARED' : 'BLOCKED'}
 Check type: ${data.checkType || 'deduplication'}
 Write 1-2 sentences narrating why this matters for fair insurance.
@@ -112,7 +112,7 @@ Respond in plain English only. No bullet points. No markdown. No jargon.`.trim()
 
     case 'payout_fired':
       prompt = `
-A GigShield payout has just been processed.
+A RouteSafe Insurance payout has just been processed.
 Amount: ₹${data.amount}
 Worker city: ${data.city || 'Bangalore'}
 Hours of income protected: ${data.hoursLost || 2}
@@ -124,7 +124,7 @@ Respond in plain English only. No bullet points. No markdown. No jargon.`.trim()
 
     case 'anomaly_detected':
       prompt = `
-GigShield's Zero-Day detector has found something unusual.
+RouteSafe Insurance's Zero-Day detector has found something unusual.
 ${data.clusteredCount || 3} workers went offline simultaneously in zone ${data.zone}.
 This does not match any known weather trigger — it may be a new type of disruption.
 Write 2 sentences explaining what a Zero-Day anomaly means for parametric insurance.
@@ -158,7 +158,7 @@ Respond in plain English only. No bullet points. No markdown. No jargon.`.trim()
     return typeof fallback === 'function' ? fallback(data) : fallback;
   }
 
-  return 'GigShield is monitoring and processing this event.';
+  return 'RouteSafe Insurance is monitoring and processing this event.';
 }
 
 module.exports = { narrateEvent };
