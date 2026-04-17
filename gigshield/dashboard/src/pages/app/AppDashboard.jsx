@@ -77,16 +77,28 @@ export default function AppDashboard() {
   return (
     <div style={s.page}>
 
-      {/* ── PROFILE HEADER ──────────────────────────── */}
-      <div style={s.profileHeader}>
-        <div style={s.avatar}>{workerName.charAt(0).toUpperCase()}</div>
-        <div>
-          <div style={s.profileName}>{workerName}</div>
-          <div style={s.profileSub}>{worker.city} · Zone {worker.zone} · {(worker.platforms || []).join(' + ')}</div>
+      {/* ── PROFILE HERO ─────────────────────────────── */}
+      <div style={s.profileHero}>
+        <div style={s.profileHeroBg} />
+        <div style={s.profileHeroContent}>
+          <div style={s.avatar}>
+            {workerName.charAt(0).toUpperCase()}
+            {shiftOn && <div style={s.avatarRing} />}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={s.profileName}>{workerName}</div>
+            <div style={s.profileSub}>
+              {worker.city} · Zone {worker.zone} · {(worker.platforms || []).join(' + ')}
+            </div>
+          </div>
+          {shiftOn ? (
+            <div style={s.onlineBadge}>
+              <span style={s.onlineDot} />Online
+            </div>
+          ) : (
+            <div style={s.offlineBadge}>Offline</div>
+          )}
         </div>
-        {shiftOn && (
-          <div style={s.onlineBadge}>● Online</div>
-        )}
       </div>
 
       {/* ── EARNINGS CARD ───────────────────────────── */}
@@ -185,24 +197,31 @@ export default function AppDashboard() {
       </div>
 
       {/* ── START SHIFT BUTTON ──────────────────────── */}
-      <button
-        onClick={shiftOn ? () => navigate('/app/monitor') : handleStartShift}
-        disabled={shifting}
-        style={{
-          ...s.shiftBtn,
-          background: shiftOn
-            ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)'
-            : 'linear-gradient(135deg, #E23744 0%, #C62833 100%)'
-        }}
-      >
-        <span style={{ fontSize: 28 }}>{shiftOn ? '🟢' : '🎯'}</span>
-        <span style={s.shiftText}>
-          {shifting ? 'Starting...' : shiftOn ? 'Shift Active — View Monitor' : 'Start Shift'}
-        </span>
-        <span style={s.shiftSub}>
-          {shiftOn ? `Online since ${(shiftTime || new Date()).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : 'Tap to go online and enable RouteSafe Insurance monitoring'}
-        </span>
-      </button>
+      <div style={{ padding: '4px 16px 8px' }}>
+        <button
+          onClick={shiftOn ? () => navigate('/app/monitor') : handleStartShift}
+          disabled={shifting}
+          style={{
+            ...s.shiftBtn,
+            background: shiftOn
+              ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+              : 'linear-gradient(135deg, #E23744 0%, #B31D29 100%)'
+          }}
+        >
+          <div style={s.shiftIconWrap}>
+            <span style={{ fontSize: 30 }}>{shiftOn ? '🟢' : '🛵'}</span>
+            {shiftOn && <div style={s.pulseRing} />}
+          </div>
+          <span style={s.shiftText}>
+            {shifting ? 'Starting...' : shiftOn ? 'Shift Active' : 'Start Shift'}
+          </span>
+          <span style={s.shiftSub}>
+            {shiftOn
+              ? `Online · tap to view live monitor`
+              : 'Tap to go online · RouteSafe protection activates'}
+          </span>
+        </button>
+      </div>
 
     </div>
   )
@@ -221,24 +240,49 @@ function getRiskLabel(city) {
 
 // ── STYLES ────────────────────────────────────────────────
 const s = {
-  page: { padding: '0 0 24px', background: '#F7F7F7' },
+  page: { background: '#F4F4F7', paddingBottom: 16 },
 
-  profileHeader: {
-    display: 'flex', alignItems: 'center', gap: 12,
-    padding: '16px', background: '#fff', marginBottom: 8
+  profileHero: {
+    background: 'linear-gradient(135deg, #1C1C2E 0%, #2D1F2F 100%)',
+    padding: '20px 16px 20px', position: 'relative', overflow: 'hidden',
+    marginBottom: 12,
+  },
+  profileHeroBg: {
+    position: 'absolute', top: -30, right: -30,
+    width: 120, height: 120, borderRadius: '50%',
+    background: 'rgba(226,55,68,0.12)',
+  },
+  profileHeroContent: {
+    display: 'flex', alignItems: 'center', gap: 14, position: 'relative',
   },
   avatar: {
-    width: 44, height: 44, borderRadius: '50%',
-    background: '#E23744', color: '#fff',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: 20, fontWeight: 700
+    width: 50, height: 50, borderRadius: '50%',
+    background: 'linear-gradient(135deg, #E23744, #B31D29)',
+    color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: 22, fontWeight: 800, flexShrink: 0, position: 'relative',
+    boxShadow: '0 4px 12px rgba(226,55,68,0.4)',
   },
-  profileName: { fontSize: 17, fontWeight: 700, color: '#1C1C1C' },
-  profileSub: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+  avatarRing: {
+    position: 'absolute', inset: -4, borderRadius: '50%',
+    border: '2px solid rgba(16,185,129,0.6)',
+    animation: 'pulse 2s ease-in-out infinite',
+  },
+  profileName: { fontSize: 17, fontWeight: 700, color: '#fff' },
+  profileSub: { fontSize: 12, color: 'rgba(255,255,255,0.55)', marginTop: 3 },
   onlineBadge: {
-    marginLeft: 'auto', fontSize: 12, fontWeight: 700,
-    color: '#10B981', background: '#ECFDF5',
-    padding: '4px 10px', borderRadius: 20
+    marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5,
+    fontSize: 12, fontWeight: 700, color: '#10B981',
+    background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)',
+    padding: '5px 12px', borderRadius: 20,
+  },
+  onlineDot: {
+    width: 7, height: 7, borderRadius: '50%', background: '#10B981',
+    display: 'inline-block', boxShadow: '0 0 8px #10B981',
+  },
+  offlineBadge: {
+    marginLeft: 'auto', fontSize: 12, fontWeight: 600,
+    color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.08)',
+    padding: '5px 12px', borderRadius: 20,
   },
 
   card: {
@@ -285,11 +329,17 @@ const s = {
   },
 
   shiftBtn: {
-    width: 'calc(100% - 32px)', margin: '8px 16px', padding: '20px 16px',
-    borderRadius: 16, border: 'none', color: '#fff',
+    width: '100%', padding: '22px 16px 18px',
+    borderRadius: 18, border: 'none', color: '#fff',
     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-    cursor: 'pointer', boxShadow: '0 4px 20px rgba(226,55,68,0.3)'
+    cursor: 'pointer',
+    boxShadow: '0 6px 24px rgba(226,55,68,0.35)',
   },
-  shiftText: { fontSize: 18, fontWeight: 700 },
-  shiftSub: { fontSize: 12, opacity: 0.85 }
+  shiftIconWrap: { position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  pulseRing: {
+    position: 'absolute', inset: -8, borderRadius: '50%',
+    border: '2px solid rgba(16,185,129,0.5)',
+  },
+  shiftText: { fontSize: 20, fontWeight: 800, letterSpacing: -0.3 },
+  shiftSub: { fontSize: 12, opacity: 0.8, textAlign: 'center', lineHeight: 1.5 },
 }

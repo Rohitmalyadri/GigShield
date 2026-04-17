@@ -23,7 +23,7 @@ export default function AppRegister() {
   const [phone,    setPhone]    = useState('')
   const [city,     setCity]     = useState('Bangalore')
   const [zone,     setZone]     = useState('560034')
-  const [platform, setPlatform] = useState('zomato')
+  const [platforms, setPlatforms] = useState(['zomato'])  // multi-select array
   const [step,     setStep]     = useState(1)
   const [loading,  setLoading]  = useState(false)
   const [error,    setError]    = useState('')
@@ -40,9 +40,18 @@ export default function AppRegister() {
     }
   }, [step, city, zone])
 
+  function togglePlatform(p) {
+    setPlatforms(prev =>
+      prev.includes(p)
+        ? prev.length > 1 ? prev.filter(x => x !== p) : prev  // keep at least 1
+        : [...prev, p]
+    )
+  }
+
   function goToPreview() {
     if (!name.trim()) return setError('Enter your name')
     if (!/^\d{10}$/.test(phone)) return setError('Enter a valid 10-digit phone number')
+    if (platforms.length === 0) return setError('Select at least one platform')
     setError('')
     setStep(2)
   }
@@ -56,7 +65,7 @@ export default function AppRegister() {
         phone: phone.trim(),
         city,
         zone,
-        platforms: [platform]
+        platforms
       })
       // Save identity to sessionStorage for other mobile pages
       sessionStorage.setItem('gigshield_worker_hash', res.data.worker.workerHash)
@@ -143,29 +152,41 @@ export default function AppRegister() {
           </div>
 
           <div style={s.field}>
-            <label style={s.label}>Platform</label>
+            <label style={s.label}>Platform <span style={{ color: '#9CA3AF', textTransform: 'none', fontWeight: 400 }}>(select all that apply)</span></label>
             <div style={s.platformRow}>
-              {['zomato', 'swiggy'].map(p => (
-                <button
-                  key={p}
-                  onClick={() => setPlatform(p)}
-                  style={{
-                    ...s.platBtn,
-                    background: platform === p
-                      ? (p === 'zomato' ? '#FEE2E5' : '#FFF3E6')
-                      : '#F9FAFB',
-                    borderColor: platform === p
-                      ? (p === 'zomato' ? '#E23744' : '#FC8019')
-                      : '#E5E7EB',
-                    color: platform === p
-                      ? (p === 'zomato' ? '#E23744' : '#FC8019')
-                      : '#6B7280'
-                  }}
-                >
-                  {p === 'zomato' ? '🍕 Zomato' : '🛵 Swiggy'}
-                </button>
-              ))}
+              {[{ id: 'zomato', label: 'Zomato', emoji: '🍕', color: '#E23744', bg: '#FEE2E5' },
+                { id: 'swiggy', label: 'Swiggy', emoji: '🛵', color: '#FC8019', bg: '#FFF3E6' }]
+                .map(p => {
+                  const selected = platforms.includes(p.id)
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => togglePlatform(p.id)}
+                      style={{
+                        ...s.platBtn,
+                        background: selected ? p.bg : '#F9FAFB',
+                        borderColor: selected ? p.color : '#E5E7EB',
+                        color:       selected ? p.color : '#6B7280',
+                        position: 'relative',
+                      }}
+                    >
+                      {selected && (
+                        <span style={{
+                          position: 'absolute', top: 6, right: 8,
+                          fontSize: 10, fontWeight: 800, color: p.color
+                        }}>✓</span>
+                      )}
+                      {p.emoji} {p.label}
+                    </button>
+                  )
+                })
+              }
             </div>
+            {platforms.length === 2 && (
+              <div style={{ fontSize: 11, color: '#10B981', marginTop: 6, fontWeight: 600 }}>
+                ✓ Multi-platform — both selected
+              </div>
+            )}
           </div>
 
           {error && <div style={s.error}>{error}</div>}
@@ -189,7 +210,7 @@ export default function AppRegister() {
               ₹{preview || '...'}<span style={s.premUnit}>/week</span>
             </div>
             <div style={s.premNote}>
-              Auto-deducted from your {platform} earnings
+              Auto-deducted from your {platforms.join(' + ')} earnings
             </div>
           </div>
 
@@ -198,6 +219,10 @@ export default function AppRegister() {
             <div style={s.detailRow}>
               <span style={s.detailLabel}>Name</span>
               <span style={s.detailValue}>{name}</span>
+            </div>
+            <div style={s.detailRow}>
+              <span style={s.detailLabel}>Platform(s)</span>
+              <span style={s.detailValue}>{platforms.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' + ')}</span>
             </div>
             <div style={s.detailRow}>
               <span style={s.detailLabel}>City / Zone</span>
