@@ -562,6 +562,150 @@ All of this happens **automatically, within seconds, without any human involveme
 
 ---
 
+
+---
+
+## Phase 3 — What We Actually Built (Scale & Optimise)
+
+This section documents the full technical implementation shipped during Phase 3 of DEVTrails 2026.
+
+---
+
+### 🚀 Feature 6 — Instant Batch Claim Payout (Razorpay)
+
+**The problem:** Admin had to pay each approved worker one by one — impossible at scale with 50+ claims.
+
+**What we built:** A single button that pays **all approved claims simultaneously** via Razorpay.
+
+**How it works:**
+1. Admin opens Payment page → sees live count of approved unpaid claims + total amount
+2. Clicks "Pay All Workers Now" → one Razorpay checkout modal opens for the full amount
+3. Admin completes payment → backend verifies HMAC SHA-256 signature
+4. All 50 claims are marked `paid` with real Razorpay `pay_XXXXXXXXX` transaction IDs
+5. Live streaming log shows each worker's payout in real time
+
+**Key technical detail:** Each claim gets a unique `orderId` in the Payment table (`order_XXXX_<claimShortId>`) even though they share one Razorpay transaction — this avoids unique constraint violations in PostgreSQL.
+
+---
+
+### 🤖 Feature 7 — Gemini Flash AI for Dispute Resolution
+
+**Primary LLM:** `gemini-flash-latest` via `X-goog-api-key` header (v1beta endpoint)
+**Fallback:** Ollama local model (`qwen-balanced:latest`) — only fires if Gemini is unavailable
+
+**Architecture:**
+```
+Dispute received
+    → askGemini(prompt) with 8s timeout
+    → On 429: wait 3s, retry once
+    → On failure: askOllama(prompt) with 15s timeout
+    → Ollama only uses CPU when Gemini is down — saves compute at demo time
+```
+
+The dispute engine generates a structured JSON verdict: `{ decision, confidence, reasoning, recommendation }` for every disputed claim.
+
+---
+
+### 📈 Feature 8 — Predictive Analytics
+
+The analytics dashboard now forecasts **next week's expected claims per city** using:
+
+```
+Predicted Claims = 4-week Rolling Average × Seasonal Monsoon Multiplier
+```
+
+| City | Monsoon Multiplier | Risk Signal |
+|---|---|---|
+| Mumbai (Jun–Sep) | ×2.8 | HIGH |
+| Bangalore (Apr–May) | ×1.5 | MEDIUM |
+| Delhi (Jul–Aug) | ×1.3 | MEDIUM |
+
+This lets insurers pre-allocate capital reserves before claims arrive — a genuine actuarial capability.
+
+---
+
+### 📱 Feature 9 — Premium Mobile UX (Zomato Partner Clone)
+
+The worker-facing mobile app was fully redesigned to match a production FinTech standard:
+
+| Screen | Upgrade |
+|---|---|
+| **Home** | Gradient hero banner, animated earnings counters, coverage promo card with estimated premium |
+| **Bottom Nav** | SVG icons replacing emoji, active state pill indicator, glassmorphism background |
+| **Register** | Multi-platform selection (Zomato + Swiggy simultaneously), 2-step preview flow |
+| **Dashboard** | Dark gradient hero header, glowing avatar, pulse animation on Start Shift |
+| **Top Bar** | Pulsing LIVE badge, shield SVG icon |
+
+---
+
+### 🔒 Feature 10 — 3-Layer Fraud Detection
+
+**Layer 1 — GPS Spoofing Detection:**
+Worker GPS coordinates are validated using physics — if location jumps more than possible speed allows between two timestamps, claim is rejected.
+
+**Layer 2 — Identity Deduplication:**
+SHA-256 canonical hash of `name + phone + city + zone` — if the same worker claims on both Zomato and Swiggy for the same disruption window, only one claim passes.
+
+**Layer 3 — DBSCAN Anomaly Clustering:**
+Claims require a minimum cluster of offline riders in the same zone. A single rider going offline is a personal breakdown, not a disruption.
+
+---
+
+### 🖥️ Admin Panel — Final Page Map
+
+| Route | Page | Key Feature |
+|---|---|---|
+| `/` | Mission Control | Live WebSocket KPIs, 4-service system status panel |
+| `/simulate` | Simulation | Trigger disruptions with real AI scenario generation |
+| `/payment` | Payments | Premium collection + one-click batch payout |
+| `/analytics` | Analytics | Loss ratios, predictive forecast, city breakdown |
+| `/risk` | Risk Engine | Zone risk heatmap, DBSCAN anomaly scores |
+| `/claims` | Claims | Full claim table with 3-gate status indicators |
+| `/workers` | Workers | All registered delivery partners |
+| `/policies` | Policies | Active coverage policies |
+
+---
+
+### 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18, Vite, React Router |
+| Backend | Node.js, Express.js |
+| Database | PostgreSQL, Prisma ORM |
+| Real-time | Socket.io WebSockets |
+| Payments | Razorpay (Test Mode — real API, real TXN IDs) |
+| AI Primary | Gemini Flash (`gemini-flash-latest`) |
+| AI Fallback | Ollama local (`qwen-balanced:latest`) |
+| Weather | OpenWeatherMap API |
+| ML | DBSCAN anomaly clustering |
+| Fraud | SHA-256 hashing, GPS physics validation |
+| Cache | Redis |
+
+---
+
+### 🚀 Running Locally
+
+**Backend:**
+```bash
+cd gigshield/backend
+npm install
+node server.js
+# http://localhost:4000
+```
+
+**Frontend:**
+```bash
+cd gigshield/dashboard
+npm install
+npm run dev
+# http://localhost:5173
+```
+
+**On your phone (same WiFi):** `http://192.168.1.11:5173/app`
+
+---
+
 *Guidewire DEVTrails 2026 — RouteSafe Insurance Team*
 *Last updated: April 17, 2026*
 
