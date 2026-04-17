@@ -1,4 +1,4 @@
-﻿// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 // APP MONITOR — Live disruption alerts + payout notification
 // ─────────────────────────────────────────────────────────
 // THE KEY DEMO SCREEN. Connected to WebSocket.
@@ -27,12 +27,12 @@ export default function AppMonitor() {
   const [payout,    setPayout]    = useState(null)
   const [connected, setConnected] = useState(false)
   const [zone]                    = useState(
-    sessionStorage.getItem('RouteSafe Insurance_worker_zone') || '560034'
+    sessionStorage.getItem('gigshield_worker_zone') || '560034'
   )
   const [city]                    = useState(
-    sessionStorage.getItem('RouteSafe Insurance_worker_city') || 'Bangalore'
+    sessionStorage.getItem('gigshield_worker_city') || 'Bangalore'
   )
-  const workerName = sessionStorage.getItem('RouteSafe Insurance_worker_name') || 'Partner'
+  const workerName = sessionStorage.getItem('gigshield_worker_name') || 'Partner'
   const shiftStart = new Date()
 
   // ── WEBSOCKET EVENTS ──────────────────────────────────

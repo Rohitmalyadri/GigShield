@@ -1,4 +1,4 @@
-﻿// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 // APP REGISTER — Worker registration flow
 // ─────────────────────────────────────────────────────────
 // 2-step form: Details → Premium Preview → Confirm
@@ -59,10 +59,10 @@ export default function AppRegister() {
         platforms: [platform]
       })
       // Save identity to sessionStorage for other mobile pages
-      sessionStorage.setItem('RouteSafe Insurance_worker_hash', res.data.worker.workerHash)
-      sessionStorage.setItem('RouteSafe Insurance_worker_city', city)
-      sessionStorage.setItem('RouteSafe Insurance_worker_name', name.trim())
-      sessionStorage.setItem('RouteSafe Insurance_worker_zone', zone)
+      sessionStorage.setItem('gigshield_worker_hash', res.data.worker.workerHash)
+      sessionStorage.setItem('gigshield_worker_city', city)
+      sessionStorage.setItem('gigshield_worker_name', name.trim())
+      sessionStorage.setItem('gigshield_worker_zone', zone)
       // Go to dashboard
       navigate('/app/dashboard')
     } catch (err) {
@@ -71,10 +71,10 @@ export default function AppRegister() {
         // Worker exists — save the hash and go to dashboard
         const hash = err.response?.data?.workerHash
         if (hash) {
-          sessionStorage.setItem('RouteSafe Insurance_worker_hash', hash)
-          sessionStorage.setItem('RouteSafe Insurance_worker_city', city)
-          sessionStorage.setItem('RouteSafe Insurance_worker_name', name.trim())
-          sessionStorage.setItem('RouteSafe Insurance_worker_zone', zone)
+          sessionStorage.setItem('gigshield_worker_hash', hash)
+          sessionStorage.setItem('gigshield_worker_city', city)
+          sessionStorage.setItem('gigshield_worker_name', name.trim())
+          sessionStorage.setItem('gigshield_worker_zone', zone)
           navigate('/app/dashboard')
           return
         }

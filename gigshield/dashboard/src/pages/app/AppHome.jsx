@@ -1,4 +1,4 @@
-﻿// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 // APP HOME — Zomato Partner home screen
 // ─────────────────────────────────────────────────────────
 // Shows a mock Zomato earnings summary + a RouteSafe Insurance
@@ -11,8 +11,8 @@ export default function AppHome() {
   const navigate = useNavigate()
 
   // Check if user already registered (stored in sessionStorage)
-  const savedHash = sessionStorage.getItem('RouteSafe Insurance_worker_hash')
-  const savedCity = sessionStorage.getItem('RouteSafe Insurance_worker_city') || 'Bangalore'
+  const savedHash = sessionStorage.getItem('gigshield_worker_hash')
+  const savedCity = sessionStorage.getItem('gigshield_worker_city') || 'Bangalore'
 
   return (
     <div style={s.page}>

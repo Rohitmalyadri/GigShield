@@ -1,4 +1,4 @@
-﻿// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 // APP CLAIMS — Claims history for the worker
 // ─────────────────────────────────────────────────────────
 // Shows all past claims with payout breakdowns.
@@ -15,7 +15,7 @@ export default function AppClaims() {
   const [loading, setLoading] = useState(true)
   const [worker,  setWorker]  = useState(null)
 
-  const workerHash = sessionStorage.getItem('RouteSafe Insurance_worker_hash')
+  const workerHash = sessionStorage.getItem('gigshield_worker_hash')
 
   useEffect(() => {
     if (!workerHash) {

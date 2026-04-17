@@ -1,5 +1,5 @@
-﻿{
-  "name": "RouteSafe Insurance-backend",
+{
+  "name": "routesafe-insurance-backend",
   "version": "1.0.0",
   "description": "RouteSafe Insurance parametric micro-insurance backend",
   "main": "server.js",
@@ -24,5 +24,8 @@
     "razorpay": "^2.9.6",
     "redis": "^5.11.0",
     "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "pdf-parse": "^2.4.5"
   }
 }

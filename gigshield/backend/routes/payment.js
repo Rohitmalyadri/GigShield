@@ -1,4 +1,4 @@
-﻿// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 // PAYMENT ROUTES — routes/payment.js
 // ─────────────────────────────────────────────────────────
 // Handles the full Razorpay payment lifecycle:
@@ -257,4 +257,145 @@ router.get('/analytics', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────
+// GET /api/payment/pending-summary
+// ─────────────────────────────────────────────────────────
+// Returns count + total rupee amount of all approved claims
+// that haven't been paid yet — used to pre-fill Razorpay modal
+// ─────────────────────────────────────────────────────────
+router.get('/pending-summary', async (req, res) => {
+  try {
+    const claims = await prisma.claim.findMany({
+      where: {
+        gate1Passed:      true,
+        gate2Passed:      true,
+        fraudCheckPassed: true,
+        payoutStatus:     { in: ['approved', 'simulated'] },
+        payoutAmount:     { gt: 0 }
+      },
+      include: { worker: true },
+      take: 50
+    });
+
+    const totalAmount = claims.reduce((s, c) => s + Math.round(c.payoutAmount), 0);
+
+    res.json({
+      success:     true,
+      count:       claims.length,
+      totalAmount,
+      claims: claims.map(c => ({
+        id:         c.id,
+        worker:     c.worker?.name || 'Unknown',
+        zone:       c.zone || c.worker?.zone,
+        amount:     Math.round(c.payoutAmount),
+      }))
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────
+// BATCH PAYOUT: POST /api/payment/batch-payout
+// ─────────────────────────────────────────────────────────
+// Called AFTER Razorpay payment is verified on the frontend.
+// Accepts optional { razorpay_payment_id } to record the
+// real transaction ID against each payout.
+// ─────────────────────────────────────────────────────────
+router.post('/batch-payout', async (req, res) => {
+  const { razorpay_payment_id, razorpay_order_id } = req.body;
+
+  try {
+    const pendingPayouts = await prisma.claim.findMany({
+      where: {
+        gate1Passed:      true,
+        gate2Passed:      true,
+        fraudCheckPassed: true,
+        payoutStatus:     { in: ['approved', 'simulated'] },
+        payoutAmount:     { gt: 0 }
+      },
+      include: { worker: true },
+      orderBy: { createdAt: 'asc' },
+      take: 50
+    });
+
+    if (pendingPayouts.length === 0) {
+      return res.json({
+        success: true, message: 'No pending approved payouts found.',
+        results: [], totalFired: 0, totalAmount: 0
+      });
+    }
+
+    const results    = [];
+    let   totalAmount = 0;
+
+    for (const claim of pendingPayouts) {
+      const amountRupees = Math.round(claim.payoutAmount);
+      const amountPaise  = amountRupees * 100;
+
+      try {
+        // Use the real Razorpay payment ID if provided, otherwise create own order
+        const paymentIdentifier = razorpay_payment_id
+          || `batch_${claim.id.substring(0, 8)}_${Date.now()}`;
+
+        await prisma.payment.create({
+          data: {
+            orderId:     razorpay_order_id || `batch_order_${claim.id.substring(0, 8)}`,
+            amount:      amountPaise,
+            currency:    'INR',
+            status:      'SUCCESS',
+            workerHash:  claim.worker?.workerHash || null,
+            description: `Batch payout: Claim ${claim.id.substring(0, 8)} — ${claim.worker?.name}`,
+            paymentId:   paymentIdentifier,
+          }
+        });
+
+        await prisma.claim.update({
+          where: { id: claim.id },
+          data:  { payoutStatus: 'paid' }
+        });
+
+        totalAmount += amountRupees;
+        results.push({
+          claimId:  claim.id,
+          worker:   claim.worker?.name || 'Unknown',
+          zone:     claim.zone || claim.worker?.zone,
+          amount:   amountRupees,
+          paymentId: paymentIdentifier,
+          status:   'SUCCESS',
+          error: null
+        });
+
+        console.log(`[Batch Payout] ✅ ₹${amountRupees} → ${claim.worker?.name}`);
+
+      } catch (claimErr) {
+        console.error(`[Batch Payout] ❌ Claim ${claim.id}: ${claimErr.message}`);
+        results.push({
+          claimId: claim.id,
+          worker:  claim.worker?.name || 'Unknown',
+          amount:  amountRupees,
+          status:  'FAILED',
+          error:   claimErr.message
+        });
+      }
+    }
+
+    const succeeded = results.filter(r => r.status === 'SUCCESS').length;
+    const failed    = results.filter(r => r.status === 'FAILED').length;
+    console.log(`[Batch Payout] Done — ${succeeded} paid, ${failed} failed, ₹${totalAmount} total`);
+
+    res.json({
+      success: true,
+      message: `Batch payout complete: ${succeeded} paid, ${failed} failed`,
+      totalFired: succeeded, totalFailed: failed, totalAmount, results
+    });
+
+  } catch (err) {
+    console.error(`[Batch Payout] Fatal: ${err.message}`);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
 module.exports = router;
+

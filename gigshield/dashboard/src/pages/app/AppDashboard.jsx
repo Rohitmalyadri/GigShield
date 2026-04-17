@@ -1,4 +1,4 @@
-﻿// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
 // APP DASHBOARD — Earnings + Coverage + Start Shift
 // ─────────────────────────────────────────────────────────
 // Shows after registration. Worker profile with earnings,
@@ -17,8 +17,8 @@ export default function AppDashboard() {
   const [shiftOn,  setShiftOn]  = useState(false)
   const [shiftTime, setShiftTime] = useState(null)
 
-  const workerHash = sessionStorage.getItem('RouteSafe Insurance_worker_hash')
-  const workerName = sessionStorage.getItem('RouteSafe Insurance_worker_name') || 'Delivery Partner'
+  const workerHash = sessionStorage.getItem('gigshield_worker_hash')
+  const workerName = sessionStorage.getItem('gigshield_worker_name') || 'Delivery Partner'
 
   useEffect(() => {
     if (!workerHash) {
