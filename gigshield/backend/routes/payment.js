@@ -338,14 +338,21 @@ router.post('/batch-payout', async (req, res) => {
         const paymentIdentifier = razorpay_payment_id
           || `batch_${claim.id.substring(0, 8)}_${Date.now()}`;
 
+        // Each payment row MUST have a unique orderId (schema constraint).
+        // Append claim short-ID so 15 claims sharing one Razorpay order don't collide.
+        const claimSuffix = claim.id.substring(0, 8);
+        const uniqueOrderId = razorpay_order_id
+          ? `${razorpay_order_id}_${claimSuffix}`
+          : `batch_order_${claimSuffix}_${Date.now()}`;
+
         await prisma.payment.create({
           data: {
-            orderId:     razorpay_order_id || `batch_order_${claim.id.substring(0, 8)}`,
+            orderId:     uniqueOrderId,
             amount:      amountPaise,
             currency:    'INR',
             status:      'SUCCESS',
             workerHash:  claim.worker?.workerHash || null,
-            description: `Batch payout: Claim ${claim.id.substring(0, 8)} — ${claim.worker?.name}`,
+            description: `Batch payout: Claim ${claimSuffix} — ${claim.worker?.name}`,
             paymentId:   paymentIdentifier,
           }
         });
