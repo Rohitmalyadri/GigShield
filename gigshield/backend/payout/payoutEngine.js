@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // LAYER 5 — PAYOUT INSTRUCTION ENGINE
 // ─────────────────────────────────────────────────────────
 // When a Claim reaches "approved" status, this module is
@@ -15,9 +15,8 @@
 //   RAZORPAY_KEY_SECRET=XXXXXXXXXXXXXXXXXX
 // ─────────────────────────────────────────────────────────
 
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
+// BUG FIX: Use the shared Prisma singleton — do not create a new PrismaClient here.
+const prisma = require('../prismaClient');
 
 /**
  * Simulates a Razorpay payout in Test Mode.
@@ -70,7 +69,7 @@ async function executePayoutForClaim(claim, worker) {
         purpose: 'payout',
         queue_if_low_balance: true,
         reference_id: claim.id,
-        narration: `GigShield Payout - Disruption on ${new Date(claim.disruptionStartTime).toDateString()}`
+        narration: `RouteSafe Insurance Payout - Disruption on ${new Date(claim.disruptionStartTime).toDateString()}`
       });
 
       transactionId = payoutResponse.id;

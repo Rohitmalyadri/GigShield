@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // APP LAYOUT — Mobile shell for all /app/* routes
 // ─────────────────────────────────────────────────────────
 // Wraps child routes with Zomato-style top bar + bottom nav.
@@ -32,7 +32,7 @@ export default function AppLayout() {
           </div>
           <div style={s.shieldChip}>
             <span style={{ fontSize: 12 }}>🛡️</span>
-            <span>GigShield</span>
+            <span>RouteSafe Insurance</span>
           </div>
         </div>
 

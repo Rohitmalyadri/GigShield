@@ -12,7 +12,7 @@ India's food delivery partners — the riders powering Zomato and Swiggy — ope
 
 They lose **20–30% of monthly income** to uncontrollable external disruptions. Traditional insurance doesn't serve them — it's too slow, too complex, and priced for salaried individuals. No product exists today that automatically detects a disruption, validates the rider was affected, and credits their wallet — without the rider lifting a finger.
 
-**GigShield** solves this. Not as an insurance app, but as **wage stabilization infrastructure** embedded directly inside the platforms riders already use.
+**RouteSafe Insurance** solves this. Not as an insurance app, but as **wage stabilization infrastructure** embedded directly inside the platforms riders already use.
 
 ---
 
@@ -24,11 +24,11 @@ They lose **20–30% of monthly income** to uncontrollable external disruptions.
 **Peak Hours:** Lunch (12–2pm) and Dinner (7–10pm)
 **Pain Point:** One flooded underpass between him and a restaurant cluster can cost him 3 hours of dinner-rush income. He has no way to recover that loss.
 
-**Critical Persona Insight:** Ravi does not have a fixed schedule. He logs on when he wants to earn. He cannot be "scheduled" — he can only be confirmed as **actively online and attempting to earn** at the time of disruption. This distinction shapes every design decision in GigShield.
+**Critical Persona Insight:** Ravi does not have a fixed schedule. He logs on when he wants to earn. He cannot be "scheduled" — he can only be confirmed as **actively online and attempting to earn** at the time of disruption. This distinction shapes every design decision in RouteSafe Insurance.
 
 ### Persona-Based Scenarios
 
-| Scenario | Disruption | Ravi's Reality | GigShield Response |
+| Scenario | Disruption | Ravi's Reality | RouteSafe Insurance Response |
 |---|---|---|---|
 | Bangalore monsoon flash flood | Rainfall >35mm/hr, IMD red alert | Roads blocked, zero orders possible | Auto-payout for lost dinner rush |
 | Delhi AQI crisis + platform suspension | AQI >400 + Zomato suspends zone | Zomato officially halts deliveries | Dual-confirmed trigger, instant credit |
@@ -41,12 +41,12 @@ They lose **20–30% of monthly income** to uncontrollable external disruptions.
 
 Building a direct-to-consumer insurance app for gig workers is a customer acquisition nightmare requiring massive marketing spend to reach a fragmented, low-trust audience.
 
-**GigShield is not an app Ravi downloads. It is infrastructure Zomato and Swiggy embed.**
+**RouteSafe Insurance is not an app Ravi downloads. It is infrastructure Zomato and Swiggy embed.**
 
 The three-party model:
 
 ```
- GIG PLATFORM (Zomato/Swiggy)        GIGSHIELD ENGINE           IRDAI UNDERWRITER
+ GIG PLATFORM (Zomato/Swiggy)        RouteSafe Insurance ENGINE           IRDAI UNDERWRITER
  ├── Distribution channel         ├── AI Risk Assessment      ├── Holds balance sheet risk
  ├── Worker identity + earnings   ├── Parametric Trigger      ├── Regulatory compliance
  └── Payout wallet                └── Fraud Validation        └── Claims ledger
@@ -54,7 +54,7 @@ The three-party model:
 
 - **The platform** gets a worker retention and welfare feature at zero cost to acquire users
 - **The underwriter** gets a pre-validated, data-rich risk pool they couldn't price on their own
-- **GigShield** owns the proprietary AI engine — the moat neither party can easily replicate
+- **RouteSafe Insurance** owns the proprietary AI engine — the moat neither party can easily replicate
 
 **Worker onboarding is a single checkbox inside the Zomato/Swiggy partner app:**
 > *"Deduct ₹X/week from my payouts for Disruption Protection — ON/OFF"*
@@ -65,7 +65,7 @@ No separate app. No KYC friction. No bank details. Zero onboarding drop-off.
 
 ## 4. Coverage Scope (Critical Constraints)
 
-GigShield covers **INCOME LOSS ONLY** caused by verifiable external disruptions.
+RouteSafe Insurance covers **INCOME LOSS ONLY** caused by verifiable external disruptions.
 
 ✅ **Covered:** Lost earning hours due to weather, flooding, pollution-based platform suspension, civic disruptions (curfew, strikes), geospatial anomalies
 ❌ **Excluded:** Vehicle repairs, health expenses, accident medical bills, life insurance, any event not causing measurable income loss
@@ -133,7 +133,7 @@ The Fraud Validation Layer detects the matching hash, merges the signals to conf
 
 ## 7. The AI Feedback Loop — Catching Zero-Day Disruptions
 
-GigShield is not a static rules engine. It is a continuously evolving predictive model.
+RouteSafe Insurance is not a static rules engine. It is a continuously evolving predictive model.
 
 **How it detects novel disruptions it has never seen before:**
 
@@ -381,17 +381,187 @@ http://localhost:4000/api/qr/7619ee8cea49187f309616e30ecf54be072259b43760f1f550a
 
 ## 15. Business Viability
 
-GigShield operates as a **B2B2C embedded insurtech** — the AI parametric engine sitting between gig platforms and IRDAI-licensed underwriters.
+RouteSafe Insurance operates as a **B2B2C embedded insurtech** — the AI parametric engine sitting between gig platforms and IRDAI-licensed underwriters.
 
 **Unit economics at scale:**
 - Distribution is free — Zomato/Swiggy already have 5M+ active delivery partners
 - At ₹45/week average premium across 1M riders → ₹45Cr/week in premium flow
 - ~80% loss ratios in non-monsoon seasons → viable underwriting margin
 
+
 **The pitch in one line:**
-> GigShield is not selling insurance to gig workers. It is selling certainty to the platforms that depend on them.
+> RouteSafe Insurance is not selling insurance to gig workers. It is selling certainty to the platforms that depend on them.
 
 ---
 
-*Guidewire DEVTrails 2026 — GigShield Team*
-*Last updated: April 2, 2026*
+## 16. 🚀 New Updates: Smart Risk Protection System
+
+> This section explains the latest upgrades to RouteSafe Insurance in plain language — no technical background needed.
+
+---
+
+### What Problem Do These Updates Solve?
+
+Imagine you are a delivery rider in Bangalore. It suddenly starts raining heavily — so heavily that no one will place an order. You are stuck at home. No work, no income.
+
+The old system could detect the rain and pay you. But it had no way of knowing *how bad* the situation was, *how many* other riders were stuck, or *whether the company could afford* to pay everyone at the same time.
+
+The new Smart Risk Protection System solves exactly that. Think of it as a **brain** that looks at the full picture before making any decision.
+
+---
+
+### 🌡️ Feature 1 — Dynamic Risk Scoring
+
+**What it does in simple terms:**
+
+Before the system does anything, it first *measures how dangerous a situation is* — like a doctor checking vital signs before prescribing medicine.
+
+It looks at four things at once:
+
+| What It Checks | Real-World Meaning |
+|---|---|
+| 🌧️ **Weather Conditions** | Is it raining? How heavily? Is there a flood alert? |
+| 👷 **Active Workers** | Are too few riders available for the area? |
+| 📦 **Order Demand** | Is there a sudden spike in orders nobody can fulfil? |
+| ⚖️ **Government Restrictions** | Is there a curfew, lockdown, or flood warning? |
+
+It then combines all four readings into a single number called the **Risk Score** — ranging from **0 (calm) to 100 (crisis)**.
+
+> **Analogy:** Think of it like a weather station reading temperature, humidity, wind speed, and pressure — and giving you one simple "Storm Level" reading instead of four separate numbers.
+
+---
+
+### 🧠 Feature 2 — Smart Decision Engine
+
+**What it does in simple terms:**
+
+Once the Risk Score is ready, the system automatically decides what action to take — like a traffic signal that changes colour based on how busy the road is.
+
+| Risk Score | System Mode | What Happens |
+|---|---|---|
+| 🟢 **0 – 30** | **Normal** | Business as usual. No special action needed. |
+| 🟡 **31 – 60** | **Incentive Mode** | Riders get a bonus (₹15 extra) for every order they complete. |
+| 🟠 **61 – 80** | **Protection Mode** | Every rider who stays online is guaranteed a minimum income of ₹200 for the shift. |
+| 🔴 **81 – 100** | **Critical Mode** | Deliveries are paused. Riders who were online get ₹75/hour just for being ready to work. |
+
+> **Analogy:** It is like an airline that offers free upgrades when the plane is half empty (incentive), guarantees seats when there is a storm (protection), and cancels flights only in extreme conditions (critical) — always with a reason and compensation.
+
+No human needs to manually make these decisions. The system handles it automatically, within seconds.
+
+---
+
+### 💰 Feature 3 — Intelligent Compensation (Paying the Right Workers, the Right Amount)
+
+**What it does in simple terms:**
+
+The old system could accidentally pay everyone — including riders who were asleep at home during the disruption. The new system is smarter. It checks *who actually deserves support* before sending a single rupee.
+
+**To qualify for support, a rider must:**
+- ✅ Have been active (online) for at least **2 hours** during the disruption
+- ✅ Have made at least **1 delivery attempt** (for bonus payments)
+- ✅ Be in a zone where the Risk Score confirms a genuine disruption
+
+**Three types of support are available:**
+
+| Support Type | When It Applies | What the Rider Gets |
+|---|---|---|
+| 🏅 **Order Bonus** | Medium-risk zones, rider is delivering | Extra ₹15 per successful delivery |
+| 🛡️ **Earnings Guarantee** | High-risk zones, orders are very low | Top-up to ensure minimum ₹200 earned in the shift |
+| ⏱️ **Downtime Pay** | Critical zones with delivery pause | ₹75 per hour for every hour the rider was online and ready |
+
+> **Analogy:** Think of it like a restaurant that pays its kitchen staff their full shift wages when they are forced to close due to a flood — but only for staff who actually showed up and were ready to work, not those who called in sick that day.
+
+---
+
+### 📊 Feature 4 — Financial Sustainability (The Risk Pool)
+
+**What it does in simple terms:**
+
+Every week, riders pay a small subscription fee (called a **premium** — similar to a Netflix subscription, but for income protection). All those payments go into a shared fund called the **Risk Pool**.
+
+When disruptions happen and riders need support, money comes out of this pool.
+
+The system constantly watches the health of this pool using a measure called the **Loss Ratio**:
+
+```
+Loss Ratio = Total Money Paid Out ÷ Total Premiums Collected
+```
+
+| Loss Ratio | Pool Health | What the System Does |
+|---|---|---|
+| 🟢 Below 60% | Healthy | Full payouts — system operating normally |
+| 🟡 60% – 80% | Monitor | Payouts continue, but the system flags a warning |
+| 🔴 Above 80% | At Risk | Payouts are automatically scaled back to protect the pool |
+| 🆘 Above 95% | Critical | Only small bonuses are paid — pool is being protected from collapse |
+
+> **Analogy:** Think of it like a community water tank. Everyone contributes water every week. If there is a drought (disruption), people draw water from the tank. But if the tank is almost empty, the system reduces how much each person can draw — so the tank does not run dry completely and everyone still gets *something*.
+
+The system handles this adjustment **automatically** — no human intervention required.
+
+---
+
+### 📈 Feature 5 — Admin Analytics Dashboard
+
+**What it does in simple terms:**
+
+All of the above happens behind the scenes. But the people managing the platform — operations managers, business owners, and investors — need to see what is happening at a glance.
+
+The new **Admin Dashboard** gives a real-time view of:
+
+- 👷 **How many riders are active** across all zones right now
+- 🗺️ **Which zones are high-risk** and need immediate attention
+- 💸 **Total payouts this period** and how they break down by type (bonus, guarantee, downtime)
+- 📊 **Loss Ratio** — a single health indicator for the entire business
+- 🏦 **Risk Pool Balance** — how much premium has been collected vs. paid out
+- 🧾 **Recent Payment History** — every transaction, filterable by zone, type, and status
+
+> **Analogy:** Think of it like a hospital dashboard that shows the number of patients admitted, the number of beds available, and the cost of treatment — all in one screen — so the administrator can make smart decisions fast.
+
+---
+
+### 🔄 How All 5 Features Work Together — The Complete Flow
+
+Here is what happens the next time there is a heavy rainstorm in Bangalore:
+
+```
+🌧️  Rain starts at 7pm in Koramangala
+
+  STEP 1 → Risk Engine reads weather, worker count, orders, and alerts
+            → Calculates Risk Score: 72 (High Risk)
+
+  STEP 2 → Decision Engine activates: PROTECTION MODE
+            → All eligible riders get ₹200 minimum guarantee + ₹50/hr downtime
+
+  STEP 3 → Compensation Engine checks each rider:
+            → Rider A: Online 3 hrs, 2 deliveries → ₹200 guaranteed + ₹20 bonus ✅
+            → Rider B: Offline all evening → ❌ Not eligible
+            → Rider C: Online 30 min only → ❌ Below minimum threshold
+
+  STEP 4 → Risk Pool is charged: ₹220 for Rider A
+            → Loss Ratio recalculated: 54% → Pool is HEALTHY ✅
+
+  STEP 5 → Admin Dashboard updates in real time
+            → Manager sees: Zone 560034 → Risk 72 → PROTECTION MODE → 1 payout
+```
+
+All of this happens **automatically, within seconds, without any human involvement** — unless the system hits a critical threshold that requires a human review.
+
+---
+
+### 📋 Summary of New Capabilities
+
+| Feature | Before | After |
+|---|---|---|
+| Risk Assessment | Binary (rain: yes/no) | Dynamic score 0–100 across 4 factors |
+| Decision Making | Manual or fixed rules | Automatic 4-mode engine |
+| Compensation | Flat payout on claim approval | Smart eligibility + 3 payout types |
+| Financial Safety | No safeguard | Auto-scaling based on Loss Ratio |
+| Admin Visibility | Basic claim list | Full real-time KPI dashboard |
+
+> These updates represent a fundamental shift from a simple claim-and-pay system to a **living, self-regulating income protection engine** that balances worker welfare with business sustainability.
+
+---
+
+*Guidewire DEVTrails 2026 — RouteSafe Insurance Team*
+*Last updated: April 17, 2026*
+

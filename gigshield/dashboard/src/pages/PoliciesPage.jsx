@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // POLICIES PAGE — PoliciesPage.jsx
 // ─────────────────────────────────────────────────────────
 // Shows all active and historical insurance policies.
@@ -51,7 +51,7 @@ export default function PoliciesPage() {
     <div>
       <div className="page-header">
         <h2>📄 Policy Management</h2>
-        <p>All GigShield insurance policies — weekly parametric wage protection</p>
+        <p>All RouteSafe Insurance insurance policies — weekly parametric wage protection</p>
       </div>
 
       {/* ── STAT CARDS ───────────────────────────────── */}
@@ -205,7 +205,7 @@ export default function PoliciesPage() {
 
                 {/* Worker hash */}
                 <div style={styles.hashRow}>
-                  <span style={{ color: '#475569', fontSize: 10 }}>GigShield ID: </span>
+                  <span style={{ color: '#475569', fontSize: 10 }}>RouteSafe Insurance ID: </span>
                   <span style={{ fontFamily: 'monospace', fontSize: 10, color: '#64748b' }}>
                     {(worker?.workerHash || '').substring(0, 20)}...
                   </span>

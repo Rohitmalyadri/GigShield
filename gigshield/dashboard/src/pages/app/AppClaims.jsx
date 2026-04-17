@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // APP CLAIMS — Claims history for the worker
 // ─────────────────────────────────────────────────────────
 // Shows all past claims with payout breakdowns.
@@ -15,7 +15,7 @@ export default function AppClaims() {
   const [loading, setLoading] = useState(true)
   const [worker,  setWorker]  = useState(null)
 
-  const workerHash = sessionStorage.getItem('gigshield_worker_hash')
+  const workerHash = sessionStorage.getItem('RouteSafe Insurance_worker_hash')
 
   useEffect(() => {
     if (!workerHash) {
@@ -73,7 +73,7 @@ export default function AppClaims() {
           <div style={{ fontSize: 15, fontWeight: 600, color: '#1C1C1C' }}>No claims yet</div>
           <div style={{ fontSize: 13, color: '#9CA3AF', marginTop: 6, lineHeight: 1.6 }}>
             When a disruption affects your zone,<br />
-            GigShield will auto-file and process claims instantly.
+            RouteSafe Insurance will auto-file and process claims instantly.
           </div>
         </div>
       ) : (

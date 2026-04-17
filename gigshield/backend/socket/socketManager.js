@@ -1,8 +1,8 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // SOCKET MANAGER — socketManager.js
 // ─────────────────────────────────────────────────────────
 // This is the central WebSocket broadcast hub.
-// EVERY real-time event in GigShield goes through here.
+// EVERY real-time event in RouteSafe Insurance goes through here.
 //
 // How it works:
 //   1. server.js calls initSocket(httpServer) on startup

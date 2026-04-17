@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // APP DASHBOARD — Earnings + Coverage + Start Shift
 // ─────────────────────────────────────────────────────────
 // Shows after registration. Worker profile with earnings,
@@ -17,8 +17,8 @@ export default function AppDashboard() {
   const [shiftOn,  setShiftOn]  = useState(false)
   const [shiftTime, setShiftTime] = useState(null)
 
-  const workerHash = sessionStorage.getItem('gigshield_worker_hash')
-  const workerName = sessionStorage.getItem('gigshield_worker_name') || 'Delivery Partner'
+  const workerHash = sessionStorage.getItem('RouteSafe Insurance_worker_hash')
+  const workerName = sessionStorage.getItem('RouteSafe Insurance_worker_name') || 'Delivery Partner'
 
   useEffect(() => {
     if (!workerHash) {
@@ -135,13 +135,13 @@ export default function AppDashboard() {
         </div>
       </div>
 
-      {/* ── GIGSHIELD COVERAGE CARD ─────────────────── */}
+      {/* ── RouteSafe Insurance COVERAGE CARD ─────────────────── */}
       <div style={{ ...s.card, border: '1.5px solid #10B981' }}>
         <div style={s.coverHeader}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 20 }}>🛡️</span>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#1C1C1C' }}>GigShield Coverage</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1C1C1C' }}>RouteSafe Insurance Coverage</div>
               <div style={{ fontSize: 12, color: '#6B7280' }}>Parametric Wage Protection</div>
             </div>
           </div>
@@ -200,7 +200,7 @@ export default function AppDashboard() {
           {shifting ? 'Starting...' : shiftOn ? 'Shift Active — View Monitor' : 'Start Shift'}
         </span>
         <span style={s.shiftSub}>
-          {shiftOn ? `Online since ${(shiftTime || new Date()).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : 'Tap to go online and enable GigShield monitoring'}
+          {shiftOn ? `Online since ${(shiftTime || new Date()).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : 'Tap to go online and enable RouteSafe Insurance monitoring'}
         </span>
       </button>
 

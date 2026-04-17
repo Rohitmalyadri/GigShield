@@ -1,5 +1,5 @@
-// ─────────────────────────────────────────────────────────
-//  GigShield Backend — server.js
+﻿// ─────────────────────────────────────────────────────────
+//  RouteSafe Insurance Backend — server.js
 //  The main entry point for the Express server.
 //  It loads environment variables, connects to PostgreSQL
 //  via Prisma, connects to Redis, and starts listening for
@@ -11,33 +11,38 @@ require('dotenv').config();
 
 const express           = require('express');
 const cors              = require('cors');
-const http              = require('http');           // NEW: needed for Socket.io
-const { PrismaClient }  = require('@prisma/client');
+const http              = require('http');
+// Use the shared Prisma singleton — prevents multiple PrismaClient instances
+const prisma            = require('./prismaClient');
 const redis             = require('redis');
 
 // Import our custom route files
 const apiRoutes         = require('./routes/api');
-const qrCheckinRoutes   = require('./routes/qrCheckin');    // NEW: QR check-in
-const qrGeneratorRoutes = require('./routes/qrGenerator');  // NEW: QR image
+const qrCheckinRoutes   = require('./routes/qrCheckin');
+const qrGeneratorRoutes = require('./routes/qrGenerator');
+const paymentRoutes     = require('./routes/payment');     // Razorpay payment routes
+const riskRoutes        = require('./routes/risk');        // Dynamic Risk Protection Engine
 
 // Import the WebSocket manager
-const { initSocket }    = require('./socket/socketManager'); // NEW
+const { initSocket }    = require('./socket/socketManager');
 
-const prisma = new PrismaClient();
-const app    = express();
+const app = express();
 
 // Middleware
 app.use(express.json());
 app.use(cors());
 
 // Mount all routes
-app.use('/api', apiRoutes);
-app.use('/api', qrCheckinRoutes);    // GET /api/checkin/:workerHash
-app.use('/api', qrGeneratorRoutes);  // GET /api/qr/:workerHash
+app.use('/api',          apiRoutes);
+app.use('/api',          qrCheckinRoutes);       // GET  /api/checkin/:workerHash
+app.use('/api',          qrGeneratorRoutes);      // GET  /api/qr/:workerHash
+app.use('/api/payment',  paymentRoutes);          // POST /api/payment/create-order, /verify | GET /history
+app.use('/api/risk',     riskRoutes);             // GET  /api/risk/score/:id, POST /simulate, /evaluate
+app.use('/api',          riskRoutes);             // POST /api/compensation/calculate, GET /api/analytics/dashboard
 
 // Health check
 app.get('/', (req, res) => {
-  res.json({ status: 'GigShield engine running', version: 'Phase 4' });
+  res.json({ status: 'RouteSafe Insurance engine running', version: 'Phase 4' });
 });
 
 async function startServer() {
@@ -64,7 +69,7 @@ async function startServer() {
 
     // Start listening — note: httpServer.listen(), NOT app.listen()
     httpServer.listen(PORT, () => {
-      console.log(`🚀  GigShield server running on http://localhost:${PORT}`);
+      console.log(`🚀  RouteSafe Insurance server running on http://localhost:${PORT}`);
       console.log(`📡  Environment: ${process.env.NODE_ENV}`);
       console.log(`🔌  WebSockets ready at ws://localhost:${PORT}`);
 

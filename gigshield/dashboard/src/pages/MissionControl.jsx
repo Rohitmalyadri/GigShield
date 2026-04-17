@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // MISSION CONTROL — MissionControl.jsx
 // ─────────────────────────────────────────────────────────
 // The single full-screen demo page. Dark theme.
@@ -214,7 +214,7 @@ export default function MissionControl() {
       <div style={styles.topBar}>
         <div style={styles.topBarLeft}>
           <span style={{ fontSize: 22 }}>🛡️</span>
-          <span style={styles.topBarTitle}>GigShield Mission Control</span>
+          <span style={styles.topBarTitle}>RouteSafe Insurance Mission Control</span>
         </div>
         <div style={styles.topBarCenter}>
           <span style={{
@@ -300,7 +300,7 @@ export default function MissionControl() {
         {/* ── RIGHT COLUMN — AI Narrator ───────────────── */}
         <div style={styles.rightCol}>
           <div style={styles.colHeader}>
-            <span>🤖 GigShield AI</span>
+            <span>🤖 RouteSafe Insurance AI</span>
             <span style={{ fontSize: 11, color: '#64748b' }}>Gemini · Qwen Fallback</span>
           </div>
           {narrations.length === 0 ? (

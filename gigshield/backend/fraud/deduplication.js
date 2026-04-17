@@ -17,9 +17,8 @@
 // If it finds a duplicate → it BLOCKS the second payout.
 // ─────────────────────────────────────────────────────────
 
-const { PrismaClient } = require('@prisma/client'); // Database access via ORM
-
-const prisma = new PrismaClient();
+// BUG FIX: Use the shared Prisma singleton — do not create a new PrismaClient here.
+const prisma = require('../prismaClient');
 
 /**
  * Checks if a duplicate claim already exists for this worker

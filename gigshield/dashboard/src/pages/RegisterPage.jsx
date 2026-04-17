@@ -1,8 +1,8 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // REGISTER PAGE — RegisterPage.jsx
 // ─────────────────────────────────────────────────────────
 // Simulates what the Swiggy / Zomato partner app shows
-// when a delivery worker enables GigShield coverage.
+// when a delivery worker enables RouteSafe Insurance coverage.
 // Design: Embedded card inside the platform's app UI.
 // ─────────────────────────────────────────────────────────
 
@@ -111,7 +111,7 @@ export default function RegisterPage() {
       {/* ── PAGE HEADER ─────────────────────────────── */}
       <div className="page-header">
         <h2>📲 Worker Registration</h2>
-        <p>Simulates the GigShield opt-in screen embedded inside the partner app</p>
+        <p>Simulates the RouteSafe Insurance opt-in screen embedded inside the partner app</p>
       </div>
 
       <div style={s.layout}>
@@ -127,14 +127,14 @@ export default function RegisterPage() {
               <span style={{ fontSize: 11, opacity: 0.8, marginLeft: 'auto' }}>⚙ Settings</span>
             </div>
 
-            {/* GigShield card inside platform app */}
+            {/* RouteSafe Insurance card inside platform app */}
             <div style={s.phoneContent}>
 
               {/* Shield header */}
               <div style={{ ...s.shieldHeader, borderColor: brand.color }}>
                 <div style={{ fontSize: 28 }}>🛡️</div>
                 <div>
-                  <div style={s.shieldTitle}>GigShield</div>
+                  <div style={s.shieldTitle}>RouteSafe Insurance</div>
                   <div style={s.shieldSub}>Income Disruption Protection</div>
                 </div>
                 <div style={{ ...s.liveChip, background: brand.bg, color: brand.color }}>
@@ -182,7 +182,7 @@ export default function RegisterPage() {
                       maxLength={10}
                       onChange={e => setPhone(e.target.value.replace(/\D/g, ''))}
                     />
-                    <div style={s.hint}>Used to create your unique GigShield ID (SHA-256 hashed)</div>
+                    <div style={s.hint}>Used to create your unique RouteSafe Insurance ID (SHA-256 hashed)</div>
                   </div>
 
                   <div style={s.fieldGroup}>
@@ -341,7 +341,7 @@ export default function RegisterPage() {
                       </span>
                     </div>
                     <div style={s.previewRow}>
-                      <span style={s.previewLabel}>GigShield ID</span>
+                      <span style={s.previewLabel}>RouteSafe Insurance ID</span>
                       <span style={{ ...s.previewValue, fontFamily: 'monospace', fontSize: 11 }}>
                         {result.worker.workerHash.substring(0, 16)}...
                       </span>
@@ -373,7 +373,7 @@ export default function RegisterPage() {
             <div style={s.infoStep}>
               <div style={{ ...s.infoNum, background: brand.color }}>1</div>
               <div>
-                <div style={s.infoStepTitle}>Platform Embeds GigShield</div>
+                <div style={s.infoStepTitle}>Platform Embeds RouteSafe Insurance</div>
                 <div style={s.infoStepDesc}>
                   Workers see this opt-in screen inside Zomato / Swiggy partner app.
                   No separate download needed.
@@ -386,7 +386,7 @@ export default function RegisterPage() {
               <div>
                 <div style={s.infoStepTitle}>SHA-256 Identity Hashing</div>
                 <div style={s.infoStepDesc}>
-                  Phone number → SHA-256 hash = unique GigShield token.
+                  Phone number → SHA-256 hash = unique RouteSafe Insurance token.
                   Works across Zomato + Swiggy simultaneously — no double payout.
                 </div>
               </div>

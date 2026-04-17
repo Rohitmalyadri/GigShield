@@ -3,10 +3,11 @@ const { handlePlatformWebhook } = require('../ingestion/webhookReceiver');
 const { processDualGate } = require('../triggers/dualGate');
 const { calculateWeeklyPremium } = require('../risk/premiumCalculator');
 const { executePayoutForClaim } = require('../payout/payoutEngine');
-const { PrismaClient } = require('@prisma/client');
+// BUG FIX: Use the singleton Prisma client instead of creating a new instance.
+// Multiple PrismaClient instances exhaust the PostgreSQL connection pool.
+const prisma = require('../prismaClient');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // ─────────────────────────────────────────────────────────
 // ROUTE: Receive platform webhooks (Layer 1 Ingestion)
@@ -147,35 +148,29 @@ router.post('/simulate-disruption', async (req, res) => {
       worker.seasonalMultiplier
     );
 
-    // upsert: creates the policy if missing, or returns the existing one
-    const policy = await prisma.policy.upsert({
+    // BUG FIX: The original upsert used id:'placeholder' which silently fails in Prisma.
+    // Correct approach: findFirst for this worker's current week, create if missing.
+    let policy = await prisma.policy.findFirst({
       where: {
-        // Prisma needs a unique field to upsert on — we use a compound trick
-        // (NOTE: full compound unique constraint added in Phase 2 migration)
-        id: 'placeholder'
-      },
-      update: {},
-      create: {
-        workerId: worker.id,
+        workerId:      worker.id,
         weekStartDate: weekStart,
-        weekEndDate: weekEnd,
-        premiumAmount: premiumAmount,
-        premiumPaid: true,
         coverageActive: true
-      }
-    }).catch(async () => {
-      // If upsert fails (no existing), just create a fresh policy
-      return await prisma.policy.create({
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!policy) {
+      policy = await prisma.policy.create({
         data: {
-          workerId: worker.id,
-          weekStartDate: weekStart,
-          weekEndDate: weekEnd,
-          premiumAmount: premiumAmount,
-          premiumPaid: true,
+          workerId:       worker.id,
+          weekStartDate:  weekStart,
+          weekEndDate:    weekEnd,
+          premiumAmount:  premiumAmount,
+          premiumPaid:    true,
           coverageActive: true
         }
       });
-    });
+    }
 
     // ── STEP 5: Run the Dual Gate ──────────────────────
     const result = await processDualGate(
@@ -475,6 +470,53 @@ router.get('/worker/:workerHash', async (req, res) => {
     });
   } catch (err) {
     console.error(`[API Error] /api/worker/:hash: ${err.message}`);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────
+// ROUTE: Aggregated analytics for the dashboard
+// GET /api/analytics
+// Returns pre-computed KPIs: total premiums, lossRatio,
+// claims by city, approval rate, trend data.
+// ─────────────────────────────────────────────────────────
+router.get('/analytics', async (req, res) => {
+  try {
+    const [policies, claims] = await Promise.all([
+      prisma.policy.findMany({ include: { worker: true, claims: true } }),
+      prisma.claim.findMany({ orderBy: { createdAt: 'asc' } })
+    ]);
+
+    const totalPremiums = policies.reduce((s, p) => s + (p.premiumAmount || 0), 0);
+    const approvedClaims = claims.filter(c => c.payoutStatus === 'approved');
+    const totalPaidOut  = approvedClaims.reduce((s, c) => s + (c.payoutAmount || 0), 0);
+    const lossRatio     = totalPremiums > 0 ? (totalPaidOut / totalPremiums) * 100 : 0;
+
+    // City breakdown
+    const cityMap = {};
+    policies.forEach(p => {
+      const city = p.worker?.city || 'Unknown';
+      if (!cityMap[city]) cityMap[city] = { city, premiums: 0, paidOut: 0, claims: 0 };
+      cityMap[city].premiums += p.premiumAmount || 0;
+      cityMap[city].paidOut  += p.totalPaidOut  || 0;
+      cityMap[city].claims   += p.claims.length;
+    });
+
+    res.json({
+      success: true,
+      analytics: {
+        totalPremiums,
+        totalPaidOut,
+        lossRatio: Math.round(lossRatio * 10) / 10,
+        totalClaims:    claims.length,
+        approvedClaims: approvedClaims.length,
+        approvalRate:   claims.length > 0 ? (approvedClaims.length / claims.length) * 100 : 0,
+        activePolicies: policies.filter(p => p.coverageActive && new Date(p.weekEndDate) > new Date()).length,
+        cityBreakdown:  Object.values(cityMap),
+      }
+    });
+  } catch (err) {
+    console.error(`[API Error] /api/analytics: ${err.message}`);
     res.status(500).json({ success: false, error: err.message });
   }
 });

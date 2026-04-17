@@ -14,9 +14,9 @@
 
 const { execSync }   = require('child_process');
 const path           = require('path');
-const { PrismaClient } = require('@prisma/client');
-
-const prisma = new PrismaClient();
+// BUG FIX: Use the shared Prisma singleton — this poller runs every 60s;
+// creating a new PrismaClient each time would leak connections rapidly.
+const prisma = require('../prismaClient');
 
 // Path to our Python anomaly detector script
 const ANOMALY_SCRIPT = path.join(__dirname, '..', 'risk', 'ml', 'anomalyDetector.py');

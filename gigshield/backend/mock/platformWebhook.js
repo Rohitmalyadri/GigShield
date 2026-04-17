@@ -1,11 +1,11 @@
-const { PrismaClient } = require('@prisma/client');
+﻿const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const PORT = process.env.MOCK_PLATFORM_PORT || 3001;
 const INTERVAL = process.env.MOCK_WEBHOOK_INTERVAL_MS || 5000;
 
-// URL of our central GigShield ingestion endpoint
-const GIGSHIELD_WEBHOOK_URL = 'http://localhost:4000/api/webhooks/platform';
+// URL of our central RouteSafe Insurance ingestion endpoint
+const RouteSafe Insurance_WEBHOOK_URL = 'http://localhost:4000/api/webhooks/platform';
 
 /**
  * Generate mock activity payload for a given worker
@@ -60,14 +60,14 @@ function startEmitting() {
       const payload = generateActivityPayload(worker);
       
       try {
-        const response = await fetch(GIGSHIELD_WEBHOOK_URL, {
+        const response = await fetch(RouteSafe Insurance_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
         console.log(`[Event Sent] ${worker.name} on ${payload.platform} -> Status: ${response.status}`);
       } catch (err) {
-        console.log(`[Event Failed] Target offline: ${GIGSHIELD_WEBHOOK_URL}`);
+        console.log(`[Event Failed] Target offline: ${RouteSafe Insurance_WEBHOOK_URL}`);
       }
     }
   }, INTERVAL);

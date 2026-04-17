@@ -1,7 +1,7 @@
-// ─────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────
 // APP HOME — Zomato Partner home screen
 // ─────────────────────────────────────────────────────────
-// Shows a mock Zomato earnings summary + a GigShield
+// Shows a mock Zomato earnings summary + a RouteSafe Insurance
 // promotional card with CTA to register for protection.
 // ─────────────────────────────────────────────────────────
 
@@ -11,8 +11,8 @@ export default function AppHome() {
   const navigate = useNavigate()
 
   // Check if user already registered (stored in sessionStorage)
-  const savedHash = sessionStorage.getItem('gigshield_worker_hash')
-  const savedCity = sessionStorage.getItem('gigshield_worker_city') || 'Bangalore'
+  const savedHash = sessionStorage.getItem('RouteSafe Insurance_worker_hash')
+  const savedCity = sessionStorage.getItem('RouteSafe Insurance_worker_city') || 'Bangalore'
 
   return (
     <div style={s.page}>
@@ -39,12 +39,12 @@ export default function AppHome() {
         </div>
       </div>
 
-      {/* ── GIGSHIELD PROMO CARD ──────────────────── */}
+      {/* ── RouteSafe Insurance PROMO CARD ──────────────────── */}
       <div style={s.promoCard}>
         <div style={s.promoHeader}>
           <div style={s.promoIcon}>🛡️</div>
           <div>
-            <div style={s.promoTitle}>GigShield Protection</div>
+            <div style={s.promoTitle}>RouteSafe Insurance Protection</div>
             <div style={s.promoSub}>Income Disruption Insurance</div>
           </div>
           <div style={s.newBadge}>NEW</div>
@@ -104,7 +104,7 @@ export default function AppHome() {
 
       {/* ── HOW IT WORKS ─────────────────────────────── */}
       <div style={s.howSection}>
-        <div style={s.howTitle}>How GigShield Works</div>
+        <div style={s.howTitle}>How RouteSafe Insurance Works</div>
         {[
           { num: '1', text: 'Enable protection with one tap' },
           { num: '2', text: 'Start your shift as usual' },
